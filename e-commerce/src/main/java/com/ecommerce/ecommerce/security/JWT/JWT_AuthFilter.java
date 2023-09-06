@@ -1,7 +1,6 @@
 package com.ecommerce.ecommerce.security.JWT;
 
-import com.ecommerce.ecommerce.DTO.userDTO;
-import com.ecommerce.ecommerce.repository.UserRepository;
+import com.ecommerce.ecommerce.services.JWTServices.jwtService;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.FilterChain;
@@ -13,34 +12,23 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 @Component
-public class JWT_AuthFilter extends OncePerRequestFilter implements UserDetailsService {
+public class JWT_AuthFilter extends OncePerRequestFilter {
     private Logger logger = LoggerFactory.getLogger(OncePerRequestFilter.class);
 
     @Autowired
     private JWT_Helper jwtHelper;
 
-    private UserRepository userRepository;
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        userDTO user = userRepository.findByEmail(email);
-        if (user == null) {
-            throw new UsernameNotFoundException("User not found with email: " + email);
-        }
-        return new User(user.getEmail(), user.getPassword(), new ArrayList<>());
-    }
 
+    @Autowired
+    private jwtService jwtService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -75,7 +63,7 @@ public class JWT_AuthFilter extends OncePerRequestFilter implements UserDetailsS
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             //fetch user detail from username
-            UserDetails userDetails = this.loadUserByUsername(email);
+            UserDetails userDetails = jwtService.loadUserByUsername(email);
             Boolean validateToken = jwtHelper.validateToken(token, userDetails);
             if (validateToken) {
                 //set the authentication
