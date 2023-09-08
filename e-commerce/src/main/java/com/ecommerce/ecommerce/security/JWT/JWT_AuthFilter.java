@@ -1,5 +1,6 @@
 package com.ecommerce.ecommerce.security.JWT;
 
+import com.ecommerce.ecommerce.CustomUserDetails.CustomUserDetails;
 import com.ecommerce.ecommerce.services.JWTServices.jwtService;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -11,8 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -33,13 +34,11 @@ public class JWT_AuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String requestHeader = request.getHeader("Authorization");
-        logger.info(" Header :", requestHeader);
         String email = null;
         String token = null;
 
 
-        if (requestHeader != null && requestHeader.startsWith("Bearer")) {
-            //looking good
+        if (requestHeader != null && requestHeader.startsWith("Bearer ")) {
             token = requestHeader.substring(7);
             try {
                 email = jwtHelper.getUsernameFromToken(token);
@@ -62,14 +61,14 @@ public class JWT_AuthFilter extends OncePerRequestFilter {
 
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            //fetch user detail from username
-            UserDetails userDetails = jwtService.loadUserByUsername(email);
+            CustomUserDetails userDetails = jwtService.loadUserByUsername(email);
+
             Boolean validateToken = jwtHelper.validateToken(token, userDetails);
             if (validateToken) {
-                //set the authentication
-                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null);
+                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null,userDetails.getAuthorities());
                 usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                SecurityContextHolder.getContext().getAuthentication();
             } else {
                 logger.info("Validation fails !!");
             }

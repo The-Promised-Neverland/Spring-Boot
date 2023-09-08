@@ -11,6 +11,8 @@ import java.util.NoSuchElementException;
 @Service
 public class userService {
 
+
+    @Autowired
     private UserRepository userRepository;
 
     public List<userDTO> getAllusers(){

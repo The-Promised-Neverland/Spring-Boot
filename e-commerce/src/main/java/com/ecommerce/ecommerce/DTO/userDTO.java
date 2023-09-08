@@ -33,10 +33,12 @@ public class userDTO {
 
     private Boolean isAdmin=false;
 
+    @JsonIgnore // Exclude password from serialization and deserialization
     @CreatedDate
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private Date createdAt;
 
+    @JsonIgnore // Exclude password from serialization and deserialization
     @LastModifiedDate
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private Date updatedAt;
