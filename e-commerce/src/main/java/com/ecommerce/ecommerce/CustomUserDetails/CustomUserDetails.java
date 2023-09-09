@@ -15,7 +15,6 @@ public class CustomUserDetails implements UserDetails {
 
     private final String id;
     private final String name;
-
     private final String email;
     private final String password;
     private final Boolean isAdmin;

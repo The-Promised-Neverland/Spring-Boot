@@ -7,10 +7,8 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class authResponseDTO{
-    private String id;
+public class registerRequestDTO{
     private String name;
     private String email;
-    private Boolean isAdmin=false;
-    private String token;
+    private String password;
 }
