@@ -1,13 +1,11 @@
 package com.ecommerce.ecommerce.controller;
 
 import com.ecommerce.ecommerce.CustomUserDetails.CustomUserDetails;
-import com.ecommerce.ecommerce.DTO.jwtResponseDTO;
 import com.ecommerce.ecommerce.DTO.authRequestDTO;
+import com.ecommerce.ecommerce.DTO.authResponseDTO;
 import com.ecommerce.ecommerce.DTO.userDTO;
 import com.ecommerce.ecommerce.security.JWT.JWT_Helper;
 import com.ecommerce.ecommerce.services.JWTServices.jwtService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,16 +14,11 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
-import java.security.Principal;
-
 
 @RestController
 @RequestMapping("/api/authentication")
 public class auth_controller {
-    private final Logger logger = LoggerFactory.getLogger(auth_controller.class);
     @Autowired
     private jwtService jwtService;
 
@@ -43,10 +36,15 @@ public class auth_controller {
             Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
             if (auth.isAuthenticated()) {
-                UserDetails userDetails = jwtService.loadUserByUsername(request.getEmail());
-                String token = jwtUtils.generateToken(userDetails);
-                jwtResponseDTO response = new jwtResponseDTO(token,request.getEmail());
-                return new ResponseEntity<>(response, HttpStatus.OK);
+                CustomUserDetails customUserDetails = jwtService.loadUserByUsername(request.getEmail());
+                String token = jwtUtils.generateToken(customUserDetails);
+                userDTO user = new userDTO();
+                user.setId(customUserDetails.getId());
+                user.setEmail(customUserDetails.getEmail());
+                user.setIsAdmin(customUserDetails.getIsAdmin());
+                authResponseDTO authResponseDTO=new authResponseDTO();
+                authResponseDTO.setToken(token);
+                return new ResponseEntity<>(authResponseDTO, HttpStatus.ACCEPTED);
             } else {
                 // Authentication failed (incorrect username or password)
                 return new ResponseEntity<>("Incorrect username or password", HttpStatus.UNAUTHORIZED);
@@ -56,7 +54,8 @@ public class auth_controller {
             return new ResponseEntity<>("Incorrect username or password", HttpStatus.UNAUTHORIZED);
         }
     }
-// working
+
+
     @GetMapping("/auth/getData")
     public ResponseEntity<?> getUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
