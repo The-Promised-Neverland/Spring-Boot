@@ -1,6 +1,6 @@
-package com.ecommerce.ecommerce.DTO;
+package com.ecommerce.ecommerce.models.Products;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.ecommerce.ecommerce.models.Reviews.reviewDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,31 +8,34 @@ import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.mongodb.config.EnableMongoAuditing;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
+import java.util.List;
+
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Document("users")
-
-public class userDTO {
+@Document("products")
+public class productDTO {
     @Id
     private String id;
 
+    private String user; // Reference to the user who created the product
+
     private String name;
+    private String image;
+    private String brand;
+    private String category;
+    private String description;
+    private double price;
 
-    @Indexed(unique = true)
-    private String email;
-
-    @JsonIgnore
-    private String password;
-
-    private Boolean isAdmin=false;
+    private double rating;
+    private int numReviews;
+    private int countInStock;
+    private List<reviewDTO> reviews;
 
     @CreatedDate
     private Date createdAt;

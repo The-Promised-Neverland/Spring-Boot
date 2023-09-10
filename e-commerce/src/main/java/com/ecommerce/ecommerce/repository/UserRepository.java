@@ -1,6 +1,6 @@
 package com.ecommerce.ecommerce.repository;
 
-import com.ecommerce.ecommerce.DTO.userDTO;
+import com.ecommerce.ecommerce.models.Users.userDTO;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

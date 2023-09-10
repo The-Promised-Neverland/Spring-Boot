@@ -1,6 +1,6 @@
 package com.ecommerce.ecommerce.security.JWT;
 
-import com.ecommerce.ecommerce.CustomUserDetails.CustomUserDetails;
+import com.ecommerce.ecommerce.models.Users.customUserDetails;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -14,10 +14,10 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Component
-public class JWT_Helper {
+public class JWT_Utils {
 
     // Token validity period (5 hours in this example)
-    public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
+    public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60 * 1000;
 
     // Your secret key for token signing (256-bit key)
     private final SecretKey secretKey = Keys.hmacShaKeyFor("fshkt34w53u4jriwemrpw2u9053i2540-=3125i34jrfwnmefkn123423054o-=fsdfsn-0987ytfrghujiasredasfda".getBytes());
@@ -49,7 +49,7 @@ public class JWT_Helper {
     }
 
     // Generate token for user
-    public String generateToken(CustomUserDetails userDetails) {
+    public String generateToken(customUserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         return doGenerateToken(claims, userDetails.getUsername());
     }
@@ -60,13 +60,13 @@ public class JWT_Helper {
                 .setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000))
+                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY))
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
     // Validate token
-    public Boolean validateToken(String token, CustomUserDetails userDetails) {
+    public Boolean validateToken(String token, customUserDetails userDetails) {
         final String username = getUsernameFromToken(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }

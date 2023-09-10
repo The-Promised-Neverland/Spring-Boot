@@ -1,5 +1,6 @@
-package com.ecommerce.ecommerce.DTO;
+package com.ecommerce.ecommerce.models.Users.Responses;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 @Getter
@@ -8,9 +9,12 @@ import lombok.*;
 @NoArgsConstructor
 @ToString
 public class authResponseDTO{
-    private String id;
+    private String _id;
     private String name;
     private String email;
     private Boolean isAdmin=false;
+
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)  // Only include the token if it is not null
     private String token;
 }

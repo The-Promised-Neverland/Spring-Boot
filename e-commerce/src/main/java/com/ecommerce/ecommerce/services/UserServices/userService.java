@@ -1,10 +1,10 @@
 package com.ecommerce.ecommerce.services.UserServices;
 
-import com.ecommerce.ecommerce.DTO.authResponseDTO;
-import com.ecommerce.ecommerce.DTO.registerRequestDTO;
-import com.ecommerce.ecommerce.DTO.userDTO;
+import com.ecommerce.ecommerce.models.Users.Responses.authResponseDTO;
+import com.ecommerce.ecommerce.models.Users.Requests.registerRequestDTO;
+import com.ecommerce.ecommerce.models.Users.userDTO;
 import com.ecommerce.ecommerce.repository.UserRepository;
-import com.ecommerce.ecommerce.security.JWT.JWT_Helper;
+import com.ecommerce.ecommerce.security.JWT.JWT_Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,7 +16,7 @@ import java.util.NoSuchElementException;
 public class userService {
 
     @Autowired
-    private JWT_Helper jwtUtils;
+    private JWT_Utils jwtUtils;
     @Autowired
     private UserRepository userRepository;
 
@@ -36,6 +36,7 @@ public class userService {
                 .orElseThrow(() -> new NoSuchElementException("USER DOES NOT EXIST"));
     }
 
+
     public authResponseDTO createNewUser(registerRequestDTO request){
         String name=request.getName();
         String email=request.getEmail();
@@ -51,9 +52,8 @@ public class userService {
         newUser.setEmail(email);
         userRepository.save(newUser);
 
-        authResponseDTO responseDTO = new authResponseDTO(newUser.getId(), newUser.getName(), newUser.getEmail(), newUser.getIsAdmin(),null);
+        authResponseDTO responseDTO = new authResponseDTO(newUser.get_id(), newUser.getName(), newUser.getEmail(), newUser.getIsAdmin(),null);
 
-        String token=j
         return responseDTO;
     }
 

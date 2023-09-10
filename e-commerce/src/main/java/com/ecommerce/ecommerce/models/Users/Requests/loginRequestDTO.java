@@ -1,4 +1,4 @@
-package com.ecommerce.ecommerce.DTO;
+package com.ecommerce.ecommerce.models.Users.Requests;
 
 import lombok.Getter;
 import lombok.Setter;

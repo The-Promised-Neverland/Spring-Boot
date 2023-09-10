@@ -1,4 +1,4 @@
-package com.ecommerce.ecommerce.CustomUserDetails;
+package com.ecommerce.ecommerce.models.Users;
 
 import lombok.Getter;
 import lombok.ToString;
@@ -11,22 +11,22 @@ import java.util.Collections;
 
 @Getter
 @ToString
-public class CustomUserDetails implements UserDetails {
+public class customUserDetails implements UserDetails {
 
-    private final String id;
+    private final String _id;
     private final String name;
     private final String email;
     private final String password;
     private final Boolean isAdmin;
 
-    public CustomUserDetails(String id, String name, String email, String password, Boolean isAdmin) {
-        this.id = id;
+    public customUserDetails(String _id, String name, String email, String password, Boolean isAdmin) {
+        this._id = _id;
         this.name=name;
         this.email = email;
         this.password = password;
         this.isAdmin = isAdmin;
     }
-    
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         String role = isAdmin ? "ADMIN" : "USER";
