@@ -13,8 +13,4 @@ public class authResponseDTO{
     private String name;
     private String email;
     private Boolean isAdmin=false;
-
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)  // Only include the token if it is not null
-    private String token;
 }

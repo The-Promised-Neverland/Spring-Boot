@@ -6,6 +6,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -31,13 +32,25 @@ public class JWT_AuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String requestHeader = request.getHeader("Authorization");
         String email = null;
         String token = null;
 
+        Cookie[] cookies = request.getCookies();
 
-        if (requestHeader != null && requestHeader.startsWith("Bearer ")) {
-            token = requestHeader.substring(7);
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("jwt".equals(cookie.getName())) { // Replace "jwt" with the name of your cookie
+                    String jwt = cookie.getValue();
+                    // Now you have the JWT, you can use it for authentication or other purposes.
+                    token=jwt;
+                    break;
+                }
+            }
+        }
+
+
+
+        if (token != null) {
             try {
                 email = jwtHelper.getUsernameFromToken(token);
             } catch (IllegalArgumentException e) {

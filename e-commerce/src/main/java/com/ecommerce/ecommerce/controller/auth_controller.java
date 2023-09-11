@@ -9,6 +9,8 @@ import com.ecommerce.ecommerce.models.Users.customUserDetails;
 import com.ecommerce.ecommerce.security.JWT.JWT_Utils;
 import com.ecommerce.ecommerce.services.UserDetailsService.customUserDetailsService;
 import com.ecommerce.ecommerce.services.UserServices.userService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,18 +42,30 @@ public class auth_controller {
      * @Response - id,name,email,isAdmin,token
      */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody loginRequestDTO request) {
+    public ResponseEntity<?> login(@RequestBody loginRequestDTO request, HttpServletResponse response) {
         try {
-            customUserDetails customUserDetails = customUserDetailsService.loadUserByUsername(request.getEmail());
             UsernamePasswordAuthenticationToken authtoken=new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
-            authenticationManager.authenticate(authtoken);
-            String token = jwtUtils.generateToken(customUserDetails);
-            authResponseDTO response = new authResponseDTO(customUserDetails.get_id(),
-                                                           customUserDetails.getName(),
-                                                           customUserDetails.getEmail(),
-                                                           customUserDetails.getIsAdmin(),
-                                                           token);
-            return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+            Authentication authUser= authenticationManager.authenticate(authtoken); // authenticated user
+
+            if(authUser!=null && authUser.isAuthenticated() && authUser.getPrincipal() instanceof customUserDetails){
+                customUserDetails userDetails= (customUserDetails) authUser.getPrincipal();
+                String token = jwtUtils.generateToken(userDetails);
+                authResponseDTO loggedUser = new authResponseDTO(userDetails.get_id(),
+                                                               userDetails.getName(),
+                                                               userDetails.getEmail(),
+                                                               userDetails.getIsAdmin());
+
+                Cookie cookie = new Cookie("jwt", token); // Create a new cookie
+                cookie.setHttpOnly(true); // Set the HTTP-only flag for security
+                cookie.setMaxAge(3600 * 5); // Set the expiration time for the cookie in seconds (adjust as needed)
+                cookie.setPath("/");
+                response.addCookie(cookie);
+
+                return new ResponseEntity<>(loggedUser, HttpStatus.ACCEPTED);
+            }
+            else{
+                return new ResponseEntity<>("Unknown error occured...Please try logging again",HttpStatus.NETWORK_AUTHENTICATION_REQUIRED);
+            }
         } catch (BadCredentialsException e) {
             // Authentication failed due to bad credentials (incorrect username or password)
             return new ResponseEntity<>("Incorrect Credentials", HttpStatus.UNAUTHORIZED);
@@ -93,27 +107,31 @@ public class auth_controller {
     }
 
 
-
-
     /**
      * @POST
      * @Body - name,email,password
      * @Response - id,name,email,isAdmin,token
      */
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody registerRequestDTO request) {
+    public ResponseEntity<?> register(@RequestBody registerRequestDTO request, HttpServletResponse response) {
         try {
             authResponseDTO user=userService.createNewUser(request);
             UsernamePasswordAuthenticationToken authtoken=new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
             authenticationManager.authenticate(authtoken);
             customUserDetails customUserDetails = customUserDetailsService.loadUserByUsername(request.getEmail());
             String token = jwtUtils.generateToken(customUserDetails);
-            authResponseDTO response = new authResponseDTO(customUserDetails.get_id(),
+            authResponseDTO createdUser = new authResponseDTO(customUserDetails.get_id(),
                     customUserDetails.getName(),
                     customUserDetails.getEmail(),
-                    customUserDetails.getIsAdmin(),
-                    token);
-            return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+                    customUserDetails.getIsAdmin());
+
+            Cookie cookie = new Cookie("jwt", token); // Create a new cookie
+            cookie.setHttpOnly(true); // Set the HTTP-only flag for security
+            cookie.setMaxAge(3600 * 5); // Set the expiration time for the cookie in seconds (adjust as needed)
+            cookie.setPath("/");
+            response.addCookie(cookie);
+
+            return new ResponseEntity<>(createdUser, HttpStatus.ACCEPTED);
         } catch (BadCredentialsException e) {
             // Authentication failed due to bad credentials (incorrect username or password)
             return new ResponseEntity<>("Incorrect Credentials", HttpStatus.UNAUTHORIZED);

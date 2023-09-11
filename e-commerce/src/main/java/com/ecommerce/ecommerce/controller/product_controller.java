@@ -63,7 +63,7 @@ public class product_controller {
             if(authentication!=null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof customUserDetails){
                 String user=((customUserDetails) authentication.getPrincipal()).get_id();
 
-                productDTO newPrdt=new productDTO();
+                productDTO newPrdt= new productDTO();
                 newPrdt.setUser(user);
                 newPrdt.setName(createPrdt.getName());
                 newPrdt.setPrice(createPrdt.getPrice());
@@ -107,6 +107,7 @@ public class product_controller {
      * @Response - Review Posted Successfully, 200 ok
      */
     @PutMapping("/auth/createReview/{productID}")
+    @PreAuthorize("hasAuthority('USER')") // ONLY USERS CAN CREATE REVIEWS
     public ResponseEntity<?> createReview(@PathVariable("productID") String productID , @RequestBody reviewRequest request){
         try {
             Authentication authentication= SecurityContextHolder.getContext().getAuthentication();

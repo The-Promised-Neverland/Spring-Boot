@@ -27,7 +27,7 @@ public class userService {
         return userRepository.findAll();
     }
 
-    public userDTO getEmail(String email){
+    public userDTO getByEmail(String email){
         return userRepository.findByEmail(email);
     }
 
@@ -52,7 +52,7 @@ public class userService {
         newUser.setEmail(email);
         userRepository.save(newUser);
 
-        authResponseDTO responseDTO = new authResponseDTO(newUser.get_id(), newUser.getName(), newUser.getEmail(), newUser.getIsAdmin(),null);
+        authResponseDTO responseDTO = new authResponseDTO(newUser.get_id(), newUser.getName(), newUser.getEmail(), newUser.getIsAdmin());
 
         return responseDTO;
     }
