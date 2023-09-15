@@ -13,16 +13,18 @@ import java.util.List;
 
 @Service
 public class StripePaymentService {
+
     SessionCreateParams.LineItem.PriceData createPriceData(orderItemDTO orderItemDTO) {
         return SessionCreateParams.LineItem.PriceData.builder()
                 .setCurrency("usd")
                 .setUnitAmount((long)(orderItemDTO.getPrice()*100))
                 .setProductData(
                         SessionCreateParams.LineItem.PriceData.ProductData.builder()
-                                .setName(orderItemDTO.getProduct())
-                                .build())
+                                .putMetadata("product_id",orderItemDTO.getProduct())
+                                .putMetadata("product_image",orderItemDTO.getImage()).build())
                 .build();
     }
+
 
     // build each product in the stripe checkout page
     SessionCreateParams.LineItem createSessionLineItem(orderItemDTO orderItemDTO) {
@@ -48,6 +50,8 @@ public class StripePaymentService {
         // build the session param
         SessionCreateParams params = SessionCreateParams.builder()
                 .setClientReferenceId(user)
+                .putMetadata("shipping_address",orderCreationRequest.getShippingAddress().toString())
+                .putMetadata("items_price", String.valueOf(orderCreationRequest.getItemsPrice()))
                 .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
                 .setMode(SessionCreateParams.Mode.PAYMENT)
                 .setCancelUrl(orderCreationRequest.getCancelURL() + "?session_id={CHECKOUT_SESSION_ID}")
