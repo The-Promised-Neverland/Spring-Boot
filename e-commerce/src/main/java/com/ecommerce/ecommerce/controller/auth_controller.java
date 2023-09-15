@@ -1,7 +1,5 @@
 package com.ecommerce.ecommerce.controller;
 
-import com.ecommerce.ecommerce.exceptions.ExpiredSessionException;
-import com.ecommerce.ecommerce.exceptions.UnauthorizedAccessException;
 import com.ecommerce.ecommerce.models.Users.Requests.loginRequestDTO;
 import com.ecommerce.ecommerce.models.Users.Requests.registerRequestDTO;
 import com.ecommerce.ecommerce.models.Users.Responses.authResponseDTO;
@@ -79,31 +77,18 @@ public class auth_controller {
      */
     @GetMapping("/auth/user")
     public ResponseEntity<?> userProfile() {
-        try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof customUserDetails) {
-                // Cast the principal to your CustomUserDetails class
-                customUserDetails customUserDetails = (customUserDetails) authentication.getPrincipal();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // Cast the principal to your CustomUserDetails class
+        customUserDetails customUserDetails = (customUserDetails) authentication.getPrincipal();
 
-                // Access custom fields
-                authResponseDTO authUser = new authResponseDTO();
-                authUser.set_id(customUserDetails.get_id());
-                authUser.setName(customUserDetails.getName());
-                authUser.setEmail(customUserDetails.getEmail());
-                authUser.setIsAdmin(customUserDetails.getIsAdmin());
+        // Access custom fields
+        authResponseDTO authUser = new authResponseDTO();
+        authUser.set_id(customUserDetails.get_id());
+        authUser.setName(customUserDetails.getName());
+        authUser.setEmail(customUserDetails.getEmail());
+        authUser.setIsAdmin(customUserDetails.getIsAdmin());
 
-                return new ResponseEntity<>(authUser, HttpStatus.ACCEPTED);
-            }
-            else{
-                return new ResponseEntity<>("Unknown error occured...Please login again",HttpStatus.NETWORK_AUTHENTICATION_REQUIRED);
-            }
-        } catch (ExpiredSessionException e) {
-            // Handle JWT token expiration exception here
-            return ResponseEntity.status(HttpStatus.NETWORK_AUTHENTICATION_REQUIRED).build();
-        } catch (UnauthorizedAccessException e) {
-            // Handle other custom exceptions here if needed
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+        return new ResponseEntity<>(authUser, HttpStatus.ACCEPTED);
     }
 
 
@@ -137,7 +122,5 @@ public class auth_controller {
             return new ResponseEntity<>("Incorrect Credentials", HttpStatus.UNAUTHORIZED);
         }
     }
-
-
 
 }

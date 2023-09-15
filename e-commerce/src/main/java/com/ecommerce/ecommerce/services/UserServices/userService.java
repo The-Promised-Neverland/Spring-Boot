@@ -1,5 +1,6 @@
 package com.ecommerce.ecommerce.services.UserServices;
 
+import com.ecommerce.ecommerce.models.Users.Requests.updateRequestDTO;
 import com.ecommerce.ecommerce.models.Users.Responses.authResponseDTO;
 import com.ecommerce.ecommerce.models.Users.Requests.registerRequestDTO;
 import com.ecommerce.ecommerce.models.Users.userDTO;
@@ -10,7 +11,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Service
 public class userService {
@@ -27,13 +27,8 @@ public class userService {
         return userRepository.findAll();
     }
 
-    public userDTO getByEmail(String email){
+    public userDTO getUserByEmail(String email){
         return userRepository.findByEmail(email);
-    }
-
-    public userDTO getUserbyID(String userID) {
-        return userRepository.findById(userID)
-                .orElseThrow(() -> new NoSuchElementException("USER DOES NOT EXIST"));
     }
 
 
@@ -57,6 +52,22 @@ public class userService {
         return responseDTO;
     }
 
+    public void updateUser(String userID, updateRequestDTO request){
+        userDTO updateUser=userRepository.findById(userID).get();
+
+        if(request.getName()!=null){
+            updateUser.setName(request.getName());
+        }
+        if(request.getEmail()!=null){
+            updateUser.setEmail(request.getEmail());
+        }
+        if(request.getPassword()!=null){
+            String encodedPassword = encoder.encode(request.getPassword());
+            updateUser.setPassword(encodedPassword);
+        }
+        userRepository.save(updateUser);
+        return;
+    }
 
 
 }

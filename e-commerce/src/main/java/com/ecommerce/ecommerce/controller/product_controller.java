@@ -3,12 +3,11 @@ package com.ecommerce.ecommerce.controller;
 
 import com.ecommerce.ecommerce.exceptions.ExpiredSessionException;
 import com.ecommerce.ecommerce.exceptions.UnauthorizedAccessException;
-import com.ecommerce.ecommerce.models.Products.Requests.productCreationRequest;
+import com.ecommerce.ecommerce.models.Products.Requests.productManageRequest;
 import com.ecommerce.ecommerce.models.Products.productDTO;
 import com.ecommerce.ecommerce.models.Reviews.Requests.reviewRequest;
-import com.ecommerce.ecommerce.models.Reviews.reviewDTO;
 import com.ecommerce.ecommerce.models.Users.customUserDetails;
-import com.ecommerce.ecommerce.repository.ProductRepository;
+import com.ecommerce.ecommerce.services.ProductServices.productService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/products")
 public class product_controller {
     @Autowired
-    private ProductRepository productRepository;
+    private productService productService;
 
 
     /**
@@ -34,8 +33,7 @@ public class product_controller {
      */
     @GetMapping
     public ResponseEntity<Page<productDTO>> getProducts(Pageable pageable, @RequestParam(name = "search", defaultValue = "") String search) {
-        Page<productDTO> products;
-        products = productRepository.PaginationAndSearch(search, pageable);
+        Page<productDTO> products=productService.getAllProducts(pageable, search);
         return ResponseEntity.ok(products);
     }
 
@@ -46,9 +44,10 @@ public class product_controller {
      */
     @GetMapping("/{productID}")
     public ResponseEntity<productDTO> getProductDetails(@PathVariable("productID") String productID){
-        productDTO product=productRepository.productDetailsByID(productID);
+        productDTO product=productService.getProductByID(productID);
         return new ResponseEntity<>(product, HttpStatus.OK);
     }
+
 
     /**
      * @PUT
@@ -57,24 +56,13 @@ public class product_controller {
      */
     @PutMapping("/auth/productManager")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<?> productManager(@RequestBody productCreationRequest createPrdt){
+    public ResponseEntity<?> productManager(@RequestBody productManageRequest prdt){
         try {
             Authentication authentication= SecurityContextHolder.getContext().getAuthentication();
             if(authentication!=null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof customUserDetails){
                 String user=((customUserDetails) authentication.getPrincipal()).get_id();
-
-                productDTO newPrdt= new productDTO();
-                newPrdt.setUser(user);
-                newPrdt.setName(createPrdt.getName());
-                newPrdt.setPrice(createPrdt.getPrice());
-                newPrdt.setImage(createPrdt.getImage());
-                newPrdt.setBrand(createPrdt.getBrand());
-                newPrdt.setCategory(createPrdt.getCategory());
-                newPrdt.setCountInStock(createPrdt.getCountInStock());
-                newPrdt.setDescription(createPrdt.getDescription());
-
-                productRepository.save(newPrdt);
-                return new ResponseEntity<>(newPrdt,HttpStatus.CREATED);
+                productDTO product=productService.UpdateorCreateProduct(user,prdt);
+                return new ResponseEntity<>(product,HttpStatus.CREATED);
             }
             else{
                 return new ResponseEntity<>("Unauthorized Access!!!",HttpStatus.UNAUTHORIZED);
@@ -88,6 +76,7 @@ public class product_controller {
         }
     }
 
+
     /**
      * @DELETE
      * @Params - productID
@@ -96,9 +85,10 @@ public class product_controller {
     @DeleteMapping("/auth/delete/{productID}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> deleteProduct(@PathVariable("productID") String productID){
-        productRepository.deleteById(productID);
+        productService.deleteProduct(productID);
         return new ResponseEntity<>("Product deleted successfully", HttpStatus.OK);
     }
+
 
     /**
      * @PUT
@@ -114,25 +104,11 @@ public class product_controller {
             if(authentication!=null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof customUserDetails){
                 String user=((customUserDetails) authentication.getPrincipal()).get_id();
                 String name=((customUserDetails) authentication.getPrincipal()).getName();
+                Boolean isPosted=productService.postProductReview(productID,user,name,request);
 
-                productDTO product = productRepository.findById(productID).get();
-                // Check if the user has already reviewed the product
-                boolean hasReviewed = product.getReviews().stream()
-                        .anyMatch(review -> review.getUser().equals(user));
-
-                System.out.println(hasReviewed);
-                if (hasReviewed) {
+                if (isPosted==false) {
                     return new ResponseEntity<>("Product already reviewed",HttpStatus.BAD_REQUEST);
                 }
-
-                reviewDTO newReview=new reviewDTO();
-                newReview.setUser(user);
-                newReview.setName(name);
-                newReview.setComment(request.getComment());
-                newReview.setRating(request.getRating());
-
-                product.getReviews().add(newReview);
-                productRepository.save(product);
 
                 return new ResponseEntity<>("Review posted successfully!!",HttpStatus.CREATED);
             }

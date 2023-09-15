@@ -1,7 +1,11 @@
 package com.ecommerce.ecommerce.security.JWT;
 
+import com.ecommerce.ecommerce.exceptions.ExpiredSessionException;
+import com.ecommerce.ecommerce.exceptions.JwtTamperedFormatException;
+import com.ecommerce.ecommerce.exceptions.handleException.ErrorResponse;
 import com.ecommerce.ecommerce.models.Users.customUserDetails;
 import com.ecommerce.ecommerce.services.UserDetailsService.customUserDetailsService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.FilterChain;
@@ -12,6 +16,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -25,7 +31,7 @@ public class JWT_AuthFilter extends OncePerRequestFilter {
     private Logger logger = LoggerFactory.getLogger(OncePerRequestFilter.class);
 
     @Autowired
-    private JWT_Utils jwtHelper;
+    private JWT_Utils jwt_utils;
 
     @Autowired
     private customUserDetailsService customUserDetailsService;
@@ -52,21 +58,12 @@ public class JWT_AuthFilter extends OncePerRequestFilter {
 
         if (token != null) {
             try {
-                email = jwtHelper.getUsernameFromToken(token);
-            } catch (IllegalArgumentException e) {
-                logger.info("Illegal Argument while fetching the username !!");
-                e.printStackTrace();
+                email = jwt_utils.getUsernameFromToken(token);
             } catch (ExpiredJwtException e) {
-                logger.info("Given jwt token is expired !!");
-                e.printStackTrace();
+                throw new ExpiredSessionException();
             } catch (MalformedJwtException e) {
-                logger.info("Some changed has done in token !! Invalid Token");
-                e.printStackTrace();
-            } catch (Exception e) {
-                e.printStackTrace();
+                throw new JwtTamperedFormatException();
             }
-        } else {
-            logger.info("Invalid Header Value !! ");
         }
 
 
@@ -74,7 +71,7 @@ public class JWT_AuthFilter extends OncePerRequestFilter {
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             customUserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
 
-            Boolean validateToken = jwtHelper.validateToken(token, userDetails);
+            Boolean validateToken = jwt_utils.validateToken(token, userDetails);
             if (validateToken) {
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

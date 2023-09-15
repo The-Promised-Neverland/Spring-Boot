@@ -15,7 +15,4 @@ public interface ProductRepository extends MongoRepository<productDTO, String> {
     @Query("{ 'name' : { '$regex': ?0, '$options': 'i' } }")
     Page<productDTO> PaginationAndSearch(String searchKeyword, Pageable pageable);
 
-    @Query("{ '_id' : ?0 }")
-    productDTO productDetailsByID(String productID);
-
 }
