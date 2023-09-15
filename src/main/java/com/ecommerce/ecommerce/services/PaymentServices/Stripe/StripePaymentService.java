@@ -34,7 +34,7 @@ public class StripePaymentService {
                 .build();
     }
 
-    public String createStripeSession(orderCreationRequest orderCreationRequest) throws StripeException {
+    public String createStripeSession(String user, orderCreationRequest orderCreationRequest) throws StripeException {
         // set the private key
         Stripe.apiKey = "sk_test_51NT22sSJxizCNVXP36xCztSl9zsKGVlIpzuewgsi05mUtE7Ymc3nEKuLlDPJbVdpmOXICqj1UpqJ0NxNXpXuauru002E9SldUc";
 
@@ -47,6 +47,7 @@ public class StripePaymentService {
 
         // build the session param
         SessionCreateParams params = SessionCreateParams.builder()
+                .setClientReferenceId(user)
                 .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
                 .setMode(SessionCreateParams.Mode.PAYMENT)
                 .setCancelUrl(orderCreationRequest.getCancelURL() + "?session_id={CHECKOUT_SESSION_ID}")

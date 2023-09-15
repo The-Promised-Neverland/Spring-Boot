@@ -28,19 +28,23 @@ public class StripeWebhooks {
     private static final Logger logger = LoggerFactory.getLogger(StripeWebhooks.class);
     @Autowired
     private orderService orderService;
-    private String stripeWebhookSecret="whsec_ncNTkvZQa4V1KUXVQPDwOWY8H3Cv04kr";
+    private String stripeWebhookSecret="whsec_qzXPPRzVri33WvCP1lOMbIi8UHAsyVww";
 
     @PostMapping("/webhook")
     public  ResponseEntity<String> stripeWebhookEndpoint(@RequestBody String payload,
-                                      @RequestHeader("Stripe-Signature") String sigHeader) throws StripeException {
+                                                         @RequestHeader("Stripe-Signature") String sigHeader) throws StripeException {
         Stripe.apiKey = "sk_test_51NT22sSJxizCNVXP36xCztSl9zsKGVlIpzuewgsi05mUtE7Ymc3nEKuLlDPJbVdpmOXICqj1UpqJ0NxNXpXuauru002E9SldUc";
+        logger.warn("STRIPE " + Stripe.API_VERSION);
         Event event=null;
         try {
             event = Webhook.constructEvent(payload, sigHeader, stripeWebhookSecret);
+            logger.warn("EVENT " + event.getApiVersion());
         } catch (JsonSyntaxException e) {
+            logger.warn("Invalid payload"); // Use logger.info for informational message
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid payload");
         } catch (SignatureVerificationException e) {
             // Invalid signature
+            logger.warn("Invalid signature"); // Use logger.info for informational message
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid signature");
         }
 
@@ -52,17 +56,15 @@ public class StripeWebhooks {
             // Deserialization failed, probably due to an API version mismatch.
             // Refer to the Javadoc documentation on `EventDataObjectDeserializer` for
             // instructions on how to handle this case, or return an error here.
-        }
-        logger.warn("ENTERING THE CASES"); // Use logger.info for informational messages
+            logger.warn("Deserialization failed"); // Use logger.info for informational message
 
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Deserialization failed");
+        }
+        logger.warn("ENTERING THE CASES"); // Use logger.info for informational message
         switch (event.getType()) {
             case "checkout.session.completed": {
-                logger.info("YAAAAAH I AM"); // Use logger.info for informational messages
+                logger.info("checkout.session.completed"); // Use logger.info for informational messages
                 handleCheckoutSessionCompleted(stripeObject);
-                break;
-            }
-            case "customer.created": {
-                logger.info("YAAAAAH I AM COVERED"); // Use logger.info for informational messages
                 break;
             }
             default:
@@ -71,9 +73,15 @@ public class StripeWebhooks {
         return ResponseEntity.status(HttpStatus.OK).body("No event");
     }
 
-    private void handleCheckoutSessionCompleted(StripeObject stripeObject){
+    private void handleCheckoutSessionCompleted(StripeObject stripeObject) throws StripeException {
         Session session= (Session) stripeObject;
-        PaymentIntent paymentIntent=(PaymentIntent) stripeObject;
+        logger.warn("Session: " + session.toJson()); // Use logger.info for informational message
+        String paymentIntentID=session.getPaymentIntent();
+        logger.warn("paymentIntentID: " + paymentIntentID); // Use logger.info for informational message
+
+        PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentIntentID);
+        logger.warn("paymentIntent: " + paymentIntent.toJson()); // Use logger.info for informational message
+
 
         String user = session.getClientReferenceId();
         String paymentStatus = paymentIntent.getStatus();
@@ -130,5 +138,3 @@ public class StripeWebhooks {
         orderService.createOrder(user,orderCreationRequest);
     }
 }
-
-
