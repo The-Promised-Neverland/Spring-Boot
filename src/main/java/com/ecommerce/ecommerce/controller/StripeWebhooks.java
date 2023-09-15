@@ -28,7 +28,7 @@ public class StripeWebhooks {
     private static final Logger logger = LoggerFactory.getLogger(StripeWebhooks.class);
     @Autowired
     private orderService orderService;
-    private String stripeWebhookSecret="whsec_43c159b6c22e3c15bb7383eff7f098c1dda8f0e4a99b758d39f499b792518d6f";
+    private String stripeWebhookSecret="whsec_ncNTkvZQa4V1KUXVQPDwOWY8H3Cv04kr";
 
     @PostMapping("/webhook")
     public  ResponseEntity<String> stripeWebhookEndpoint(@RequestBody String payload,
