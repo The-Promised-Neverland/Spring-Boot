@@ -1,8 +1,6 @@
 package com.ecommerce.ecommerce.controller;
 
 import com.stripe.param.checkout.SessionRetrieveParams;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.ecommerce.ecommerce.models.Orders.Requests.orderCreationRequest;
 import com.ecommerce.ecommerce.models.Orders.ShippingAddressDTO;
 import com.ecommerce.ecommerce.models.Orders.orderItemDTO;
@@ -26,7 +24,6 @@ import java.util.List;
 
 @RestController
 public class StripeWebhooks {
-    private static final Logger logger = LoggerFactory.getLogger(StripeWebhooks.class);
     @Autowired
     private orderService orderService;
     private String stripeWebhookSecret="whsec_qzXPPRzVri33WvCP1lOMbIi8UHAsyVww";
@@ -35,17 +32,13 @@ public class StripeWebhooks {
     public  ResponseEntity<String> stripeWebhookEndpoint(@RequestBody String payload,
                                                          @RequestHeader("Stripe-Signature") String sigHeader) throws StripeException {
         Stripe.apiKey = "sk_test_51NT22sSJxizCNVXP36xCztSl9zsKGVlIpzuewgsi05mUtE7Ymc3nEKuLlDPJbVdpmOXICqj1UpqJ0NxNXpXuauru002E9SldUc";
-        logger.warn("STRIPE " + Stripe.API_VERSION);
         Event event=null;
         try {
             event = Webhook.constructEvent(payload, sigHeader, stripeWebhookSecret);
-            logger.warn("EVENT " + event.getApiVersion());
         } catch (JsonSyntaxException e) {
-            logger.warn("Invalid payload"); // Use logger.info for informational message
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid payload");
         } catch (SignatureVerificationException e) {
             // Invalid signature
-            logger.warn("Invalid signature"); // Use logger.info for informational message
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid signature");
         }
 
@@ -57,15 +50,10 @@ public class StripeWebhooks {
             // Deserialization failed, probably due to an API version mismatch.
             // Refer to the Javadoc documentation on `EventDataObjectDeserializer` for
             // instructions on how to handle this case, or return an error here.
-            logger.warn("Deserialization failed"); // Use logger.info for informational message
-
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Deserialization failed");
         }
-        logger.warn("ENTERING THE CASES"); // Use logger.info for informational message
         switch (event.getType()) {
             case "checkout.session.completed": {
-                logger.info("checkout.session.completed"); // Use logger.info for informational messages
-                logger.info("BEFORE GOING TO HANDLECHECKOUT, PRINTING STRIPE OBJECT", stripeObject.PRETTY_PRINT_GSON);
                 handleCheckoutSessionCompleted(stripeObject);
                 break;
             }
@@ -94,28 +82,16 @@ public class StripeWebhooks {
         String paymentEmail = session.getCustomerDetails().getEmail();
         String paymentId = session.getPaymentIntent();
 
-        logger.info("SESSION ID: " + sessionID);
-        logger.info("user: " + user);
-        logger.info("paymentStatus: "+ paymentStatus);
-        logger.info("paymentTime: " + paymentTime);
-        logger.info("paymentEmail: " + paymentEmail);
-        logger.info("paymentId: " +  paymentId);
-
-
-
         double tax_price = 0;
         double shipping_price = 0;
 
         List<orderItemDTO> orderItems = new ArrayList<>();
 
-        logger.info("LIST ITEMS: ", lineItems);
         for (LineItem item : lineItems) {
             if ("Tax".equals(item.getDescription())) {
                 tax_price = item.getAmountTotal() / 100.0;
-                logger.info("TAX PRICE " + tax_price);
             } else if ("Shipping".equals(item.getDescription())) {
                 shipping_price = item.getAmountTotal() / 100.0;
-                logger.info("SHIPPING PRICE " + shipping_price);
             } else {
                 // Create an OrderItem object for each non-tax and non-shipping item
                 orderItemDTO orderItem = new orderItemDTO();
@@ -127,7 +103,6 @@ public class StripeWebhooks {
                 orderItem.setProduct(item.getPrice().getProductObject().getMetadata().get("product_id"));
                 orderItem.setImage(item.getPrice().getProductObject().getMetadata().get("product_image"));
 
-                logger.info("PRODUCT " + orderItem);
                 orderItems.add(orderItem);
             }
         }
@@ -136,9 +111,8 @@ public class StripeWebhooks {
         double totalPrice = session.getAmountTotal() / 100;
 
         String shippingAddressMetadata = session.getMetadata().get("shipping_address");
-        logger.info("SHIPPING ADDRESS: " + shippingAddressMetadata);
 
-            // Remove the enclosing "ShippingAddressDTO()" and split the string by ","
+        // Remove the enclosing "ShippingAddressDTO()" and split the string by ","
         String[] parts = shippingAddressMetadata.replace("ShippingAddressDTO(", "").replace(")", "").split(",");
 
             // Initialize variables for the address components
@@ -173,11 +147,6 @@ public class StripeWebhooks {
             // Create a ShippingAddressDTO object with the extracted values
         ShippingAddressDTO shippingAddressDTO = new ShippingAddressDTO(address, city, postalCode, country);
 
-        logger.info("ITEMS PRICE" + itemsPrice);
-        logger.info("total price" + totalPrice);
-        logger.info("Shipping" + shippingAddressDTO);
-
-
         paymentDetailsDTO paymentDetailsDTO=new paymentDetailsDTO(paymentId,paymentStatus,paymentTime,paymentEmail);
 
         orderCreationRequest orderCreationRequest=new orderCreationRequest();
@@ -191,8 +160,5 @@ public class StripeWebhooks {
         orderCreationRequest.setTotalPrice(totalPrice);
 
         orderService.createOrder(user,orderCreationRequest);
-        logger.info("ORDER CREATED SUCCESSFULLY");
-
-
     }
 }
