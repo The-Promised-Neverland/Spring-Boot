@@ -80,24 +80,42 @@ public class StripeWebhooks {
         Session sessionObj= (Session) stripeObject;
         String sessionID=sessionObj.getId();
         SessionRetrieveParams params=SessionRetrieveParams.builder()
-                                                                    .addExpand("line_items.price.product")
+                                                                    .addExpand("line_items.data.price")
                                                                     .addExpand("payment_intent")
                                                            .build();
 
+        SessionRetrieveParams SECONDPARAMS=SessionRetrieveParams.builder()
+                .addExpand("line_items.data.price.product")
+                .addExpand("payment_intent")
+                .build();
+
         Session session = Session.retrieve(sessionID, params, null);
+        Session session2 = Session.retrieve(sessionID, SECONDPARAMS, null);
 
         String paymentIntentID=session.getPaymentIntent();
 
 
         List<LineItem> lineItems=session.getLineItems().getData();
+        List<LineItem> lineItems2=session2.getLineItems().getData();
 
         String user = session.getClientReferenceId();
         String paymentStatus = session.getPaymentIntentObject().getStatus();
         Date paymentTime = new Date(session.getPaymentIntentObject().getCreated() * 1000);
         String paymentEmail = session.getCustomerDetails().getEmail();
-        String paymentId = session.getPaymentIntentObject().getId();
+        String paymentId = session.getPaymentIntent();
 
+        logger.info("SESSION ID: " + sessionID);
+        logger.info("user: " + user);
+        logger.info("paymentStatus: "+ paymentStatus);
+        logger.info("paymentTime: " + paymentTime);
+        logger.info("paymentEmail: " + paymentEmail);
+        logger.info("paymentId: (METHOD getPaymentIntent() : " +  paymentId);
+        logger.info("paymentId: (METHOD PaymentIntentObject() : " +  paymentIntentID);
 
+        logger.info("NOW ITS TIME FOR CHECKING LINEITEMS ");
+
+        logger.info("LINEITEMS EXPANDED ONLY price" + lineItems);
+        logger.info("LINEITEMS EXPANDED price PRODUCT" + lineItems2);
 
         double tax_price = 0;
         double shipping_price = 0;
@@ -126,10 +144,18 @@ public class StripeWebhooks {
         orderItems.removeIf(item -> item.getName().equals("Tax") || item.getName().equals("Shipping"));
 
         double itemsPrice = Double.parseDouble(session.getMetadata().get("items_price"));
-        double totalPrice = Double.parseDouble(session.getMetadata().get("amount_total")) / 100.0;
+        double totalPrice = session.getAmountTotal() / 100;
+
+        logger.info("ITEMS PRICE" + itemsPrice);
+        logger.info("total price" + totalPrice);
+
+
 
         Gson gson = new Gson();
         ShippingAddressDTO shippingAddressDTO = gson.fromJson(session.getMetadata().get("shipping_address"), ShippingAddressDTO.class);
+
+        logger.info("total price" + shippingAddressDTO);
+
 
         paymentDetailsDTO paymentDetailsDTO=new paymentDetailsDTO(paymentId,paymentStatus,paymentTime,paymentEmail);
 
