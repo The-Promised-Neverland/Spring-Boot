@@ -20,6 +20,7 @@ public class StripePaymentService {
                 .setUnitAmount((long)(orderItemDTO.getPrice()*100))
                 .setProductData(
                         SessionCreateParams.LineItem.PriceData.ProductData.builder()
+                                .setName(orderItemDTO.getName())
                                 .putMetadata("product_id",orderItemDTO.getProduct())
                                 .putMetadata("product_image",orderItemDTO.getImage()).build())
                 .build();
