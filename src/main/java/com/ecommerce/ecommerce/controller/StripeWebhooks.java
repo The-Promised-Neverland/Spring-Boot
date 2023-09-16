@@ -93,7 +93,7 @@ public class StripeWebhooks {
         logger.warn("paymentIntentID: " + paymentIntentID); // Use logger.info for informational message
 
 
-        LineItemCollection lineItems=session.listLineItems().;
+        LineItemCollection lineItems=session.listLineItems();
         logger.info("LINE ITEMS: ", LineItemCollection.PRETTY_PRINT_GSON.toString());
 
         String user = session.getClientReferenceId();
