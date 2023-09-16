@@ -9,20 +9,25 @@ import com.stripe.param.checkout.SessionCreateParams;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class StripePaymentService {
 
     SessionCreateParams.LineItem.PriceData createPriceData(orderItemDTO orderItemDTO) {
+        Map<String, String> params = new HashMap<>();
+        params.put("product_id",orderItemDTO.getProduct());
+        params.put("product_image",orderItemDTO.getImage());
+
         return SessionCreateParams.LineItem.PriceData.builder()
                 .setCurrency("usd")
                 .setUnitAmount((long)(orderItemDTO.getPrice()*100))
                 .setProductData(
                         SessionCreateParams.LineItem.PriceData.ProductData.builder()
                                 .setName(orderItemDTO.getName())
-                                .putMetadata("product_id",orderItemDTO.getProduct())
-                                .putMetadata("product_image",orderItemDTO.getImage()).build())
+                                .putAllMetadata(params).build())
                 .build();
     }
 
@@ -48,6 +53,36 @@ public class StripePaymentService {
             sessionItemsList.add(createSessionLineItem(orderItemDTO));
         }
 
+
+        SessionCreateParams.LineItem taxItem = SessionCreateParams.LineItem.builder()
+                .setPriceData(
+                        SessionCreateParams.LineItem.PriceData.builder()
+                                .setCurrency("usd")
+                                .setUnitAmount((long) (orderCreationRequest.getTaxPrice() * 100)) // Set the tax price
+                                .setProductData(
+                                        SessionCreateParams.LineItem.PriceData.ProductData.builder()
+                                                .setName("Tax")
+                                                .build())
+                                .build())
+                .setQuantity(1L) // You can adjust the quantity if needed
+                .build();
+        sessionItemsList.add(taxItem);
+
+        // Add Shipping item
+        SessionCreateParams.LineItem shippingItem = SessionCreateParams.LineItem.builder()
+                .setPriceData(
+                        SessionCreateParams.LineItem.PriceData.builder()
+                                .setCurrency("usd")
+                                .setUnitAmount((long) (orderCreationRequest.getShippingPrice() * 100)) // Set the shipping price
+                                .setProductData(
+                                        SessionCreateParams.LineItem.PriceData.ProductData.builder()
+                                                .setName("Shipping")
+                                                .build())
+                                .build())
+                .setQuantity(1L) // You can adjust the quantity if needed
+                .build();
+        sessionItemsList.add(shippingItem);
+
         // build the session param
         SessionCreateParams params = SessionCreateParams.builder()
                 .setClientReferenceId(user)
@@ -62,5 +97,4 @@ public class StripePaymentService {
 
         return Session.create(params).getUrl();
     }
-
 }
