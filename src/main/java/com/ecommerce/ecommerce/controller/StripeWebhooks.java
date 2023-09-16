@@ -80,23 +80,14 @@ public class StripeWebhooks {
         Session sessionObj= (Session) stripeObject;
         String sessionID=sessionObj.getId();
         SessionRetrieveParams params=SessionRetrieveParams.builder()
-                                                                    .addExpand("line_items.data.price")
+                                                                    .addExpand("line_items.data.price.product")
                                                                     .addExpand("payment_intent")
                                                            .build();
 
-        SessionRetrieveParams SECONDPARAMS=SessionRetrieveParams.builder()
-                .addExpand("line_items.data.price.product")
-                .addExpand("payment_intent")
-                .build();
 
         Session session = Session.retrieve(sessionID, params, null);
-        Session session2 = Session.retrieve(sessionID, SECONDPARAMS, null);
-
-        String paymentIntentID=session.getPaymentIntent();
-
 
         List<LineItem> lineItems=session.getLineItems().getData();
-        List<LineItem> lineItems2=session2.getLineItems().getData();
 
         String user = session.getClientReferenceId();
         String paymentStatus = session.getPaymentIntentObject().getStatus();
@@ -109,33 +100,34 @@ public class StripeWebhooks {
         logger.info("paymentStatus: "+ paymentStatus);
         logger.info("paymentTime: " + paymentTime);
         logger.info("paymentEmail: " + paymentEmail);
-        logger.info("paymentId: (METHOD getPaymentIntent() : " +  paymentId);
-        logger.info("paymentId: (METHOD PaymentIntentObject() : " +  paymentIntentID);
+        logger.info("paymentId: " +  paymentId);
 
-        logger.info("NOW ITS TIME FOR CHECKING LINEITEMS ");
-
-        logger.info("LINEITEMS EXPANDED ONLY price" + lineItems);
-        logger.info("LINEITEMS EXPANDED price PRODUCT" + lineItems2);
 
         double tax_price = 0;
         double shipping_price = 0;
 
         List<orderItemDTO> orderItems = new ArrayList<>();
 
+        logger.info("LIST ITEMS");
         for (LineItem item : lineItems) {
             if ("Tax".equals(item.getDescription())) {
                 tax_price = item.getAmountTotal() / 100.0;
+                logger.info("TAX PRICE" + tax_price);
             } else if ("Shipping".equals(item.getDescription())) {
                 shipping_price = item.getAmountTotal() / 100.0;
+                logger.info("TAX PRICE" + shipping_price);
             } else {
                 // Create an OrderItem object for each non-tax and non-shipping item
                 orderItemDTO orderItem = new orderItemDTO();
+
                 orderItem.setName(item.getDescription());
                 orderItem.setPrice(item.getAmountTotal() / 100.0);
                 orderItem.setQty(Math.toIntExact(item.getQuantity()));
                 // Assuming you have a method to retrieve the product metadata
                 orderItem.setProduct(item.getPrice().getMetadata().get("product_id"));
                 orderItem.setImage(item.getPrice().getMetadata().get("product_image"));
+
+                logger.info("PRODUCT" + orderItem);
                 orderItems.add(orderItem);
             }
         }
@@ -146,15 +138,12 @@ public class StripeWebhooks {
         double itemsPrice = Double.parseDouble(session.getMetadata().get("items_price"));
         double totalPrice = session.getAmountTotal() / 100;
 
-        logger.info("ITEMS PRICE" + itemsPrice);
-        logger.info("total price" + totalPrice);
-
-
-
         Gson gson = new Gson();
         ShippingAddressDTO shippingAddressDTO = gson.fromJson(session.getMetadata().get("shipping_address"), ShippingAddressDTO.class);
 
-        logger.info("total price" + shippingAddressDTO);
+        logger.info("ITEMS PRICE" + itemsPrice);
+        logger.info("total price" + totalPrice);
+        logger.info("Shipping" + shippingAddressDTO);
 
 
         paymentDetailsDTO paymentDetailsDTO=new paymentDetailsDTO(paymentId,paymentStatus,paymentTime,paymentEmail);
