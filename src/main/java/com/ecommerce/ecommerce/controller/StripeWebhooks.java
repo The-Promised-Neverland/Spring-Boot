@@ -1,4 +1,5 @@
 package com.ecommerce.ecommerce.controller;
+import com.stripe.param.checkout.SessionRetrieveParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.ecommerce.ecommerce.models.Orders.Requests.orderCreationRequest;
@@ -64,6 +65,7 @@ public class StripeWebhooks {
         switch (event.getType()) {
             case "checkout.session.completed": {
                 logger.info("checkout.session.completed"); // Use logger.info for informational messages
+                logger.info("BEFORE GOING TO HANDLECHECKOUT, PRINTING STRIPE OBJECT", stripeObject.toJson());
                 handleCheckoutSessionCompleted(stripeObject);
                 break;
             }
@@ -74,8 +76,18 @@ public class StripeWebhooks {
     }
 
     private void handleCheckoutSessionCompleted(StripeObject stripeObject) throws StripeException {
-        Session session= (Session) stripeObject;
+        Session sessionObj= (Session) stripeObject;
+        String sessionID=sessionObj.getId();
+
+        SessionRetrieveParams params=SessionRetrieveParams.builder()
+                                                                    .addExpand("line_items")
+                                                                    .addExpand("payment_intent")
+                                                                    .addExpand("metadata")
+                                                           .build();
+
+        Session session = Session.retrieve(sessionID, params, null);
         logger.warn("Session: " + session.toJson()); // Use logger.info for informational message
+
         String paymentIntentID=session.getPaymentIntent();
         logger.warn("paymentIntentID: " + paymentIntentID); // Use logger.info for informational message
 
@@ -90,6 +102,7 @@ public class StripeWebhooks {
         String paymentId = paymentIntent.getId();
 
         LineItemCollection lineItems=session.getLineItems();
+        logger.info("LINE ITEMS: ", LineItemCollection.PRETTY_PRINT_GSON);
 
         double tax_price = 0;
         double shipping_price = 0;
