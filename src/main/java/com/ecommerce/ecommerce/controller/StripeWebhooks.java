@@ -79,22 +79,17 @@ public class StripeWebhooks {
     private void handleCheckoutSessionCompleted(StripeObject stripeObject) throws StripeException {
         Session sessionObj= (Session) stripeObject;
         String sessionID=sessionObj.getId();
-        logger.warn("SessionID: " + sessionID); // Use logger.info for informational message
-
         SessionRetrieveParams params=SessionRetrieveParams.builder()
                                                                     .addExpand("line_items")
                                                                     .addExpand("payment_intent")
                                                            .build();
 
         Session session = Session.retrieve(sessionID, params, null);
-        logger.warn("Session: " + session.toJson()); // Use logger.info for informational message
 
         String paymentIntentID=session.getPaymentIntent();
-        logger.warn("paymentIntentID: " + paymentIntentID); // Use logger.info for informational message
 
 
-        LineItemCollection lineItems=session.listLineItems();
-        logger.info("LINE ITEMS: ", LineItemCollection.PRETTY_PRINT_GSON.toString());
+        List<LineItem> lineItems=session.getLineItems().getData();
 
         String user = session.getClientReferenceId();
         String paymentStatus = session.getPaymentIntentObject().getStatus();
@@ -109,7 +104,7 @@ public class StripeWebhooks {
 
         List<orderItemDTO> orderItems = new ArrayList<>();
 
-        for (LineItem item : lineItems.getData()) {
+        for (LineItem item : lineItems) {
             if ("Tax".equals(item.getDescription())) {
                 tax_price = item.getAmountTotal() / 100.0;
             } else if ("Shipping".equals(item.getDescription())) {
