@@ -80,7 +80,7 @@ public class StripeWebhooks {
         Session sessionObj= (Session) stripeObject;
         String sessionID=sessionObj.getId();
         SessionRetrieveParams params=SessionRetrieveParams.builder()
-                                                                    .addExpand("line_items")
+                                                                    .addExpand("line_items.price.product")
                                                                     .addExpand("payment_intent")
                                                            .build();
 
@@ -116,8 +116,8 @@ public class StripeWebhooks {
                 orderItem.setPrice(item.getAmountTotal() / 100.0);
                 orderItem.setQty(Math.toIntExact(item.getQuantity()));
                 // Assuming you have a method to retrieve the product metadata
-                orderItem.setProduct(item.getPrice().getProductObject().getMetadata().get("product_id"));
-                orderItem.setImage(item.getPrice().getProductObject().getMetadata().get("product_image"));
+                orderItem.setProduct(item.getPrice().getMetadata().get("product_id"));
+                orderItem.setImage(item.getPrice().getMetadata().get("product_image"));
                 orderItems.add(orderItem);
             }
         }

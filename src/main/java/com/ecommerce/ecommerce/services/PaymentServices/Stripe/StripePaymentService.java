@@ -17,17 +17,15 @@ import java.util.Map;
 public class StripePaymentService {
 
     SessionCreateParams.LineItem.PriceData createPriceData(orderItemDTO orderItemDTO) {
-        Map<String, String> params = new HashMap<>();
-        params.put("product_id",orderItemDTO.getProduct());
-        params.put("product_image",orderItemDTO.getImage());
-
         return SessionCreateParams.LineItem.PriceData.builder()
                 .setCurrency("usd")
                 .setUnitAmount((long)(orderItemDTO.getPrice()*100))
                 .setProductData(
                         SessionCreateParams.LineItem.PriceData.ProductData.builder()
                                 .setName(orderItemDTO.getName())
-                                .putAllMetadata(params).build())
+                                .putMetadata("product_id",orderItemDTO.getProduct())
+                                .putMetadata("product_image",orderItemDTO.getImage())
+                                .build())
                 .build();
     }
 
