@@ -102,12 +102,13 @@ public class StripeWebhooks {
         logger.info("paymentId: " +  paymentId);
 
 
+
         double tax_price = 0;
         double shipping_price = 0;
 
         List<orderItemDTO> orderItems = new ArrayList<>();
 
-        logger.info("LIST ITEMS");
+        logger.info("LIST ITEMS: ", lineItems);
         for (LineItem item : lineItems) {
             if ("Tax".equals(item.getDescription())) {
                 tax_price = item.getAmountTotal() / 100.0;
@@ -123,8 +124,8 @@ public class StripeWebhooks {
                 orderItem.setPrice(item.getAmountTotal() / 100.0);
                 orderItem.setQty(Math.toIntExact(item.getQuantity()));
                 // Assuming you have a method to retrieve the product metadata
-                orderItem.setProduct(item.getPrice().getMetadata().get("product_id"));
-                orderItem.setImage(item.getPrice().getMetadata().get("product_image"));
+                orderItem.setProduct(item.getPrice().getProductObject().getMetadata().get("product_id"));
+                orderItem.setImage(item.getPrice().getProductObject().getMetadata().get("product_image"));
 
                 logger.info("PRODUCT " + orderItem);
                 orderItems.add(orderItem);
