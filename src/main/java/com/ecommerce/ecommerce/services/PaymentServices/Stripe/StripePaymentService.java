@@ -38,6 +38,7 @@ public class StripePaymentService {
                 // set price for each product
                 .setPriceData(createPriceData(orderItemDTO))
                 // set quantity for each product
+
                 .setQuantity(Long.parseLong(String.valueOf(orderItemDTO.getQty())))
                 .build();
     }

@@ -66,7 +66,7 @@ public class StripeWebhooks {
         switch (event.getType()) {
             case "checkout.session.completed": {
                 logger.info("checkout.session.completed"); // Use logger.info for informational messages
-                logger.info("BEFORE GOING TO HANDLECHECKOUT, PRINTING STRIPE OBJECT", stripeObject.toString());
+                logger.info("BEFORE GOING TO HANDLECHECKOUT, PRINTING STRIPE OBJECT", stripeObject.PRETTY_PRINT_GSON);
                 handleCheckoutSessionCompleted(stripeObject);
                 break;
             }
@@ -79,6 +79,7 @@ public class StripeWebhooks {
     private void handleCheckoutSessionCompleted(StripeObject stripeObject) throws StripeException {
         Session sessionObj= (Session) stripeObject;
         String sessionID=sessionObj.getId();
+        logger.warn("SessionID: " + sessionID); // Use logger.info for informational message
 
         SessionRetrieveParams params=SessionRetrieveParams.builder()
                                                                     .addExpand("line_items")
@@ -91,18 +92,17 @@ public class StripeWebhooks {
         String paymentIntentID=session.getPaymentIntent();
         logger.warn("paymentIntentID: " + paymentIntentID); // Use logger.info for informational message
 
-        PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentIntentID);
-        logger.warn("paymentIntent: " + paymentIntent.toJson()); // Use logger.info for informational message
 
+        LineItemCollection lineItems=session.listLineItems().;
+        logger.info("LINE ITEMS: ", LineItemCollection.PRETTY_PRINT_GSON.toString());
 
         String user = session.getClientReferenceId();
-        String paymentStatus = paymentIntent.getStatus();
-        Date paymentTime = new Date(paymentIntent.getCreated() * 1000);
+        String paymentStatus = session.getPaymentIntentObject().getStatus();
+        Date paymentTime = new Date(session.getPaymentIntentObject().getCreated() * 1000);
         String paymentEmail = session.getCustomerDetails().getEmail();
-        String paymentId = paymentIntent.getId();
+        String paymentId = session.getPaymentIntentObject().getId();
 
-        LineItemCollection lineItems=session.getLineItems();
-        logger.info("LINE ITEMS: ", LineItemCollection.PRETTY_PRINT_GSON.toString());
+
 
         double tax_price = 0;
         double shipping_price = 0;
