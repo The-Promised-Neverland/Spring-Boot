@@ -66,7 +66,7 @@ public class StripeWebhooks {
         switch (event.getType()) {
             case "checkout.session.completed": {
                 logger.info("checkout.session.completed"); // Use logger.info for informational messages
-                logger.info("BEFORE GOING TO HANDLECHECKOUT, PRINTING STRIPE OBJECT", stripeObject.toJson());
+                logger.info("BEFORE GOING TO HANDLECHECKOUT, PRINTING STRIPE OBJECT", stripeObject.toString());
                 handleCheckoutSessionCompleted(stripeObject);
                 break;
             }
@@ -83,7 +83,6 @@ public class StripeWebhooks {
         SessionRetrieveParams params=SessionRetrieveParams.builder()
                                                                     .addExpand("line_items")
                                                                     .addExpand("payment_intent")
-                                                                    .addExpand("metadata")
                                                            .build();
 
         Session session = Session.retrieve(sessionID, params, null);
@@ -103,7 +102,7 @@ public class StripeWebhooks {
         String paymentId = paymentIntent.getId();
 
         LineItemCollection lineItems=session.getLineItems();
-        logger.info("LINE ITEMS: ", LineItemCollection.PRETTY_PRINT_GSON);
+        logger.info("LINE ITEMS: ", LineItemCollection.PRETTY_PRINT_GSON.toString());
 
         double tax_price = 0;
         double shipping_price = 0;
