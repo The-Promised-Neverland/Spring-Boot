@@ -112,10 +112,10 @@ public class StripeWebhooks {
         for (LineItem item : lineItems) {
             if ("Tax".equals(item.getDescription())) {
                 tax_price = item.getAmountTotal() / 100.0;
-                logger.info("TAX PRICE" + tax_price);
+                logger.info("TAX PRICE " + tax_price);
             } else if ("Shipping".equals(item.getDescription())) {
                 shipping_price = item.getAmountTotal() / 100.0;
-                logger.info("TAX PRICE" + shipping_price);
+                logger.info("SHIPPING PRICE " + shipping_price);
             } else {
                 // Create an OrderItem object for each non-tax and non-shipping item
                 orderItemDTO orderItem = new orderItemDTO();
@@ -127,19 +127,51 @@ public class StripeWebhooks {
                 orderItem.setProduct(item.getPrice().getMetadata().get("product_id"));
                 orderItem.setImage(item.getPrice().getMetadata().get("product_image"));
 
-                logger.info("PRODUCT" + orderItem);
+                logger.info("PRODUCT " + orderItem);
                 orderItems.add(orderItem);
             }
         }
 
-        // Remove the filtered-out items (tax and shipping) from the orderItems list
-        orderItems.removeIf(item -> item.getName().equals("Tax") || item.getName().equals("Shipping"));
-
         double itemsPrice = Double.parseDouble(session.getMetadata().get("items_price"));
         double totalPrice = session.getAmountTotal() / 100;
 
-        Gson gson = new Gson();
-        ShippingAddressDTO shippingAddressDTO = gson.fromJson(session.getMetadata().get("shipping_address"), ShippingAddressDTO.class);
+        String shippingAddressMetadata = session.getMetadata().get("shipping_address");
+        logger.info("SHIPPING ADDRESS: " + shippingAddressMetadata);
+
+            // Remove the enclosing "ShippingAddressDTO()" and split the string by ","
+            String[] parts = shippingAddressMetadata.replace("ShippingAddressDTO(", "").replace(")", "").split(",");
+
+            // Initialize variables for the address components
+            String address = null;
+            String city = null;
+            String postalCode = null;
+            String country = null;
+
+            // Loop through the parts and extract the components
+            for (String part : parts) {
+                String[] keyValue = part.trim().split("=");
+                if (keyValue.length == 2) {
+                    String key = keyValue[0].trim();
+                    String value = keyValue[1].trim();
+                    switch (key) {
+                        case "address":
+                            address = value;
+                            break;
+                        case "city":
+                            city = value;
+                            break;
+                        case "postalCode":
+                            postalCode = value;
+                            break;
+                        case "country":
+                            country = value;
+                            break;
+                    }
+                }
+            }
+
+            // Create a ShippingAddressDTO object with the extracted values
+            ShippingAddressDTO shippingAddressDTO = new ShippingAddressDTO(address, city, postalCode, country);
 
         logger.info("ITEMS PRICE" + itemsPrice);
         logger.info("total price" + totalPrice);
