@@ -8,7 +8,6 @@ import com.ecommerce.ecommerce.models.Orders.ShippingAddressDTO;
 import com.ecommerce.ecommerce.models.Orders.orderItemDTO;
 import com.ecommerce.ecommerce.models.Orders.paymentDetailsDTO;
 import com.ecommerce.ecommerce.services.OrderServices.orderService;
-import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.stripe.Stripe;
 import com.stripe.exception.SignatureVerificationException;
@@ -139,39 +138,39 @@ public class StripeWebhooks {
         logger.info("SHIPPING ADDRESS: " + shippingAddressMetadata);
 
             // Remove the enclosing "ShippingAddressDTO()" and split the string by ","
-            String[] parts = shippingAddressMetadata.replace("ShippingAddressDTO(", "").replace(")", "").split(",");
+        String[] parts = shippingAddressMetadata.replace("ShippingAddressDTO(", "").replace(")", "").split(",");
 
             // Initialize variables for the address components
-            String address = null;
-            String city = null;
-            String postalCode = null;
-            String country = null;
+        String address = null;
+        String city = null;
+        String postalCode = null;
+        String country = null;
 
             // Loop through the parts and extract the components
-            for (String part : parts) {
-                String[] keyValue = part.trim().split("=");
-                if (keyValue.length == 2) {
-                    String key = keyValue[0].trim();
-                    String value = keyValue[1].trim();
-                    switch (key) {
-                        case "address":
-                            address = value;
-                            break;
-                        case "city":
-                            city = value;
-                            break;
-                        case "postalCode":
-                            postalCode = value;
-                            break;
-                        case "country":
-                            country = value;
-                            break;
-                    }
+        for (String part : parts) {
+            String[] keyValue = part.trim().split("=");
+            if (keyValue.length == 2) {
+                String key = keyValue[0].trim();
+                String value = keyValue[1].trim();
+                switch (key) {
+                    case "address":
+                        address = value;
+                        break;
+                    case "city":
+                        city = value;
+                        break;
+                    case "postalCode":
+                        postalCode = value;
+                        break;
+                    case "country":
+                        country = value;
+                        break;
                 }
             }
+        }
 
             // Create a ShippingAddressDTO object with the extracted values
-            ShippingAddressDTO shippingAddressDTO = new ShippingAddressDTO(address, city, postalCode, country);
+        ShippingAddressDTO shippingAddressDTO = new ShippingAddressDTO(address, city, postalCode, country);
 
         logger.info("ITEMS PRICE" + itemsPrice);
         logger.info("total price" + totalPrice);
@@ -191,5 +190,8 @@ public class StripeWebhooks {
         orderCreationRequest.setTotalPrice(totalPrice);
 
         orderService.createOrder(user,orderCreationRequest);
+        logger.info("ORDER CREATED SUCCESSFULLY");
+
+
     }
 }

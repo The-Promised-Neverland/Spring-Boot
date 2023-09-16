@@ -28,8 +28,8 @@ public class order_controller {
     public ResponseEntity<?> createOrder(@RequestBody orderCreationRequest request){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String user = ((customUserDetails) authentication.getPrincipal()).get_id();
-        orderDTO order=orderService.createOrder(user,request);
-        return new ResponseEntity<>(order, HttpStatus.CREATED);
+        orderService.createOrder(user,request);
+        return new ResponseEntity<>("ORDER CREATED SUCCESSFULLY",HttpStatus.CREATED);
     }
 
 

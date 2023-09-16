@@ -19,7 +19,7 @@ public class orderService {
     @Autowired
     private OrderRepository orderRepository;
 
-    public orderDTO createOrder(String user, orderCreationRequest request){
+    public void createOrder(String user, orderCreationRequest request){
         orderDTO order=new orderDTO();
 
         if(request.getPaymentResult()!=null){
@@ -35,7 +35,8 @@ public class orderService {
         order.setShippingPrice(request.getShippingPrice());
         order.setTotalPrice(request.getTotalPrice());
         order.setPaymentResult(request.getPaymentResult());
-        return order;
+        orderRepository.save(order);
+        return;
     }
 
     public orderDTO showOrder(String user, String orderID){
