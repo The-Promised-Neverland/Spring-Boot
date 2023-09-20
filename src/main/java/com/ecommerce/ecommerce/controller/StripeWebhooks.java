@@ -14,6 +14,7 @@ import com.stripe.model.*;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,14 +25,18 @@ import java.util.List;
 
 @RestController
 public class StripeWebhooks {
+
+    private String stripeWebhookSecret;
+    public StripeWebhooks(@Value("${stripe.secret.webhook}") String stripeWebhookSecret, @Value("${stripe.secret.key}") String stripeSecretKey) {
+        Stripe.apiKey=stripeSecretKey;
+        this.stripeWebhookSecret=stripeWebhookSecret;
+    }
     @Autowired
     private orderService orderService;
-    private String stripeWebhookSecret="whsec_qzXPPRzVri33WvCP1lOMbIi8UHAsyVww";
 
     @PostMapping("/webhook")
     public  ResponseEntity<String> stripeWebhookEndpoint(@RequestBody String payload,
                                                          @RequestHeader("Stripe-Signature") String sigHeader) throws StripeException {
-        Stripe.apiKey = "sk_test_51NT22sSJxizCNVXP36xCztSl9zsKGVlIpzuewgsi05mUtE7Ymc3nEKuLlDPJbVdpmOXICqj1UpqJ0NxNXpXuauru002E9SldUc";
         Event event=null;
         try {
             event = Webhook.constructEvent(payload, sigHeader, stripeWebhookSecret);

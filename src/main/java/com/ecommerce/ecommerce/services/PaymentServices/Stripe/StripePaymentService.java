@@ -6,15 +6,19 @@ import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class StripePaymentService {
+
+    //Initiate Stripe
+    public StripePaymentService(@Value("${stripe.secret.key}") String stripeSecretKey) {
+        Stripe.apiKey=stripeSecretKey;
+    }
 
     SessionCreateParams.LineItem.PriceData createPriceData(orderItemDTO orderItemDTO) {
         return SessionCreateParams.LineItem.PriceData.builder()
@@ -41,9 +45,6 @@ public class StripePaymentService {
     }
 
     public String createStripeSession(String user, orderCreationRequest orderCreationRequest) throws StripeException {
-        // set the private key
-        Stripe.apiKey = "sk_test_51NT22sSJxizCNVXP36xCztSl9zsKGVlIpzuewgsi05mUtE7Ymc3nEKuLlDPJbVdpmOXICqj1UpqJ0NxNXpXuauru002E9SldUc";
-
         List<SessionCreateParams.LineItem> sessionItemsList = new ArrayList<>();
 
         // for each product compute SessionCreateParams.LineItem

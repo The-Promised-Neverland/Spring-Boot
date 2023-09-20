@@ -5,6 +5,9 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -15,12 +18,17 @@ import java.util.function.Function;
 
 @Component
 public class JWT_Utils {
+    private static final Logger logger = LoggerFactory.getLogger(JWT_Utils.class);
 
     // Token validity period (5 hours in this example)
     public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60 * 1000;
 
-    // Your secret key for token signing (256-bit key)
-    private final SecretKey secretKey = Keys.hmacShaKeyFor("fshkt34w53u4jriwemrpw2u9053i2540-=3125i34jrfwnmefkn123423054o-=fsdfsn-0987ytfrghujiasredasfda".getBytes());
+    private String jwtSecretKey;
+    private final SecretKey secretKey;
+    public JWT_Utils(@Value("${jwt.secret}") String jwtSecretKey) {
+        this.jwtSecretKey=jwtSecretKey;
+        this.secretKey = Keys.hmacShaKeyFor(jwtSecretKey.getBytes());
+    }
 
     // Retrieve username from jwt token
     public String getUsernameFromToken(String token) {
