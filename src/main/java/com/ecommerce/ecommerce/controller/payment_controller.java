@@ -1,7 +1,7 @@
 package com.ecommerce.ecommerce.controller;
 
 import com.ecommerce.ecommerce.models.Orders.Requests.orderCreationRequest;
-import com.ecommerce.ecommerce.models.Users.customUserDetails;
+import com.ecommerce.ecommerce.models.Users.UserDetails;
 import com.ecommerce.ecommerce.services.PaymentServices.Stripe.StripePaymentService;
 import com.stripe.exception.StripeException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,7 @@ public class payment_controller {
     @PostMapping("/create-checkout-session")
     public ResponseEntity<String> createSession(@RequestBody orderCreationRequest orderCreationRequest) throws StripeException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String user = ((customUserDetails) authentication.getPrincipal()).get_id();
+        String user = ((UserDetails) authentication.getPrincipal()).get_id();
         String session=stripePaymentService.createStripeSession(user,orderCreationRequest);
         return new ResponseEntity<>(session, HttpStatus.CREATED);
     }

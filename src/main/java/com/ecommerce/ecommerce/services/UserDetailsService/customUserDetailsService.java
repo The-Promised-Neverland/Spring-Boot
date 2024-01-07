@@ -1,6 +1,6 @@
 package com.ecommerce.ecommerce.services.UserDetailsService;
 
-import com.ecommerce.ecommerce.models.Users.customUserDetails;
+import com.ecommerce.ecommerce.models.Users.UserDetails;
 import com.ecommerce.ecommerce.models.Users.userDTO;
 import com.ecommerce.ecommerce.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,12 +15,12 @@ public class customUserDetailsService implements UserDetailsService {
     private UserRepository userRepository;
 
     @Override
-    public customUserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         userDTO user = userRepository.findByEmail(email);
         if (user == null) {
             throw new UsernameNotFoundException("User not found with email: " + email);
         }
-        customUserDetails loadUser=new customUserDetails(user.get_id(),
+        UserDetails loadUser=new UserDetails(user.get_id(),
                                                          user.getName(),
                                                          user.getEmail(),
                                                          user.getPassword(),

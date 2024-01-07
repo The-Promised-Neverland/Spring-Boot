@@ -3,7 +3,7 @@ package com.ecommerce.ecommerce.controller;
 
 import com.ecommerce.ecommerce.models.Orders.Requests.orderCreationRequest;
 import com.ecommerce.ecommerce.models.Orders.orderDTO;
-import com.ecommerce.ecommerce.models.Users.customUserDetails;
+import com.ecommerce.ecommerce.models.Users.UserDetails;
 import com.ecommerce.ecommerce.services.OrderServices.orderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,7 +27,7 @@ public class order_controller {
     @PutMapping("/createOrder")
     public ResponseEntity<?> createOrder(@RequestBody orderCreationRequest request){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String user = ((customUserDetails) authentication.getPrincipal()).get_id();
+        String user = ((UserDetails) authentication.getPrincipal()).get_id();
         orderService.createOrder(user,request);
         return new ResponseEntity<>("ORDER CREATED SUCCESSFULLY",HttpStatus.CREATED);
     }
@@ -36,7 +36,7 @@ public class order_controller {
     @GetMapping("/{orderID}")
     public ResponseEntity<orderDTO> retrieveOrderByID(@PathVariable("orderID") String orderID){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String user = ((customUserDetails) authentication.getPrincipal()).get_id();
+        String user = ((UserDetails) authentication.getPrincipal()).get_id();
         orderDTO order=orderService.showOrder(user,orderID);
         return new ResponseEntity<orderDTO>(order,HttpStatus.OK);
     }

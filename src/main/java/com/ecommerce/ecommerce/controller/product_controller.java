@@ -6,7 +6,7 @@ import com.ecommerce.ecommerce.exceptions.UnauthorizedAccessException;
 import com.ecommerce.ecommerce.models.Products.Requests.productManageRequest;
 import com.ecommerce.ecommerce.models.Products.productDTO;
 import com.ecommerce.ecommerce.models.Reviews.Requests.reviewRequest;
-import com.ecommerce.ecommerce.models.Users.customUserDetails;
+import com.ecommerce.ecommerce.models.Users.UserDetails;
 import com.ecommerce.ecommerce.services.ProductServices.productService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -59,8 +59,8 @@ public class product_controller {
     public ResponseEntity<?> productManager(@RequestBody productManageRequest prdt){
         try {
             Authentication authentication= SecurityContextHolder.getContext().getAuthentication();
-            if(authentication!=null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof customUserDetails){
-                String user=((customUserDetails) authentication.getPrincipal()).get_id();
+            if(authentication!=null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof UserDetails){
+                String user=((UserDetails) authentication.getPrincipal()).get_id();
                 productDTO product=productService.UpdateorCreateProduct(user,prdt);
                 return new ResponseEntity<>(product,HttpStatus.CREATED);
             }
@@ -101,9 +101,9 @@ public class product_controller {
     public ResponseEntity<?> createReview(@PathVariable("productID") String productID , @RequestBody reviewRequest request){
         try {
             Authentication authentication= SecurityContextHolder.getContext().getAuthentication();
-            if(authentication!=null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof customUserDetails){
-                String user=((customUserDetails) authentication.getPrincipal()).get_id();
-                String name=((customUserDetails) authentication.getPrincipal()).getName();
+            if(authentication!=null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof UserDetails){
+                String user=((UserDetails) authentication.getPrincipal()).get_id();
+                String name=((UserDetails) authentication.getPrincipal()).getName();
                 Boolean isPosted=productService.postProductReview(productID,user,name,request);
 
                 if (isPosted==false) {

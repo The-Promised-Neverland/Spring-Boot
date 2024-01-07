@@ -3,10 +3,10 @@ package com.ecommerce.ecommerce.controller;
 import com.ecommerce.ecommerce.models.Users.Requests.loginRequestDTO;
 import com.ecommerce.ecommerce.models.Users.Requests.registerRequestDTO;
 import com.ecommerce.ecommerce.models.Users.Responses.authResponseDTO;
-import com.ecommerce.ecommerce.models.Users.customUserDetails;
-import com.ecommerce.ecommerce.security.JWT.JWT_Utils;
+import com.ecommerce.ecommerce.models.Users.UserDetails;
 import com.ecommerce.ecommerce.services.UserDetailsService.customUserDetailsService;
 import com.ecommerce.ecommerce.services.UserServices.userService;
+import com.ecommerce.ecommerce.utils.JwtUtils;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,10 +26,10 @@ public class auth_controller {
     private customUserDetailsService customUserDetailsService;
 
     @Autowired
-    private AuthenticationManager authenticationManager;
+    private JwtUtils jwtUtils;
 
     @Autowired
-    private JWT_Utils jwtUtils;
+    private AuthenticationManager authenticationManager;
 
     @Autowired
     private userService userService;
@@ -45,8 +45,8 @@ public class auth_controller {
             UsernamePasswordAuthenticationToken authtoken=new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
             Authentication authUser= authenticationManager.authenticate(authtoken); // authenticated user
 
-            if(authUser!=null && authUser.isAuthenticated() && authUser.getPrincipal() instanceof customUserDetails){
-                customUserDetails userDetails= (customUserDetails) authUser.getPrincipal();
+            if(authUser!=null && authUser.isAuthenticated() && authUser.getPrincipal() instanceof UserDetails){
+                UserDetails userDetails= (UserDetails) authUser.getPrincipal();
                 String token = jwtUtils.generateToken(userDetails);
                 authResponseDTO loggedUser = new authResponseDTO(userDetails.get_id(),
                                                                userDetails.getName(),
@@ -79,7 +79,7 @@ public class auth_controller {
     public ResponseEntity<?> userProfile() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         // Cast the principal to your CustomUserDetails class
-        customUserDetails customUserDetails = (customUserDetails) authentication.getPrincipal();
+        UserDetails customUserDetails = (UserDetails) authentication.getPrincipal();
 
         // Access custom fields
         authResponseDTO authUser = new authResponseDTO();
@@ -103,7 +103,7 @@ public class auth_controller {
             authResponseDTO user=userService.createNewUser(request);
             UsernamePasswordAuthenticationToken authtoken=new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
             authenticationManager.authenticate(authtoken);
-            customUserDetails customUserDetails = customUserDetailsService.loadUserByUsername(request.getEmail());
+            UserDetails customUserDetails = customUserDetailsService.loadUserByUsername(request.getEmail());
             String token = jwtUtils.generateToken(customUserDetails);
             authResponseDTO createdUser = new authResponseDTO(customUserDetails.get_id(),
                     customUserDetails.getName(),

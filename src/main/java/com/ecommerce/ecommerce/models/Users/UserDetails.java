@@ -4,22 +4,20 @@ import lombok.Getter;
 import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
 
 @Getter
 @ToString
-public class customUserDetails implements UserDetails {
-
+public class UserDetails implements org.springframework.security.core.userdetails.UserDetails {
     private final String _id;
     private final String name;
     private final String email;
     private final String password;
     private final Boolean isAdmin;
 
-    public customUserDetails(String _id, String name, String email, String password, Boolean isAdmin) {
+    public UserDetails(String _id, String name, String email, String password, Boolean isAdmin) {
         this._id = _id;
         this.name=name;
         this.email = email;

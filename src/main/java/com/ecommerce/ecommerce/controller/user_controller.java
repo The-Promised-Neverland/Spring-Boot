@@ -3,7 +3,7 @@ package com.ecommerce.ecommerce.controller;
 import com.ecommerce.ecommerce.exceptions.ExpiredSessionException;
 import com.ecommerce.ecommerce.exceptions.UnauthorizedAccessException;
 import com.ecommerce.ecommerce.models.Users.Requests.updateRequestDTO;
-import com.ecommerce.ecommerce.models.Users.customUserDetails;
+import com.ecommerce.ecommerce.models.Users.UserDetails;
 import com.ecommerce.ecommerce.models.Users.userDTO;
 import com.ecommerce.ecommerce.services.UserServices.userService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,8 +55,8 @@ public class user_controller {
     public ResponseEntity<?> updateUser(@RequestBody updateRequestDTO request){
         try{
             Authentication authentication= SecurityContextHolder.getContext().getAuthentication();
-            if(authentication!=null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof customUserDetails){
-                String userID= ((customUserDetails) authentication.getPrincipal()).get_id();
+            if(authentication!=null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof UserDetails){
+                String userID= ((UserDetails) authentication.getPrincipal()).get_id();
 
                 userService.updateUser(userID,request);
 
