@@ -1,8 +1,6 @@
 package com.ecommerce.ecommerce.controller;
 
 
-import com.ecommerce.ecommerce.exceptions.ExpiredSessionException;
-import com.ecommerce.ecommerce.exceptions.UnauthorizedAccessException;
 import com.ecommerce.ecommerce.models.Products.Requests.productManageRequest;
 import com.ecommerce.ecommerce.models.Products.productDTO;
 import com.ecommerce.ecommerce.models.Reviews.Requests.reviewRequest;
@@ -67,12 +65,9 @@ public class product_controller {
             else{
                 return new ResponseEntity<>("Unauthorized Access!!!",HttpStatus.UNAUTHORIZED);
             }
-        } catch (ExpiredSessionException e) {
+        } catch (RuntimeException e) {
             // Handle JWT token expiration exception here
             return ResponseEntity.status(HttpStatus.NETWORK_AUTHENTICATION_REQUIRED).build();
-        } catch (UnauthorizedAccessException e) {
-            // Handle other custom exceptions here if needed
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 
@@ -115,12 +110,9 @@ public class product_controller {
             else{
                 return new ResponseEntity<>("Unauthorized Access!!!",HttpStatus.UNAUTHORIZED);
             }
-        } catch (ExpiredSessionException e) {
+        } catch (RuntimeException e) {
             // Handle JWT token expiration exception here
             return ResponseEntity.status(HttpStatus.NETWORK_AUTHENTICATION_REQUIRED).build();
-        } catch (UnauthorizedAccessException e) {
-            // Handle other custom exceptions here if needed
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 }

@@ -33,6 +33,9 @@ public class JwtUtils {
     public String getRoleFromToken(String token) {
         return getClaimFromToken(token, claims -> claims.get("role", String.class));
     }
+    public String getNameFromToken(String token) {
+        return getClaimFromToken(token, claims -> claims.get("name", String.class));
+    }
 
     // Retrieve expiration date from jwt token
     private Date getExpirationDateFromToken(String token) {
@@ -59,6 +62,7 @@ public class JwtUtils {
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", userDetails.getAuthorities().iterator().next().getAuthority());
+        claims.put("name", userDetails.getName());
         return doGenerateToken(claims, userDetails.getUsername());
     }
 

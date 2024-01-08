@@ -1,7 +1,7 @@
 package com.ecommerce.ecommerce.services.OrderServices;
 
 
-import com.ecommerce.ecommerce.exceptions.NotFoundException;
+import com.ecommerce.ecommerce.exceptions.UserAlreadyExistsException;
 import com.ecommerce.ecommerce.models.Orders.Requests.orderCreationRequest;
 import com.ecommerce.ecommerce.models.Orders.orderDTO;
 import com.ecommerce.ecommerce.repository.OrderRepository;
@@ -40,7 +40,7 @@ public class orderService {
     }
 
     public orderDTO showOrder(String user, String orderID){
-        orderDTO order=orderRepository.findById(orderID).orElseThrow(() -> new NotFoundException());
+        orderDTO order=orderRepository.findById(orderID).orElseThrow(() -> new RuntimeException());
         if(!order.getUser().equals(new ObjectId(user))){ // if the order is not of this user
             throw new AccessDeniedException("Access denied. This order does not belong to the current user.");
         }
@@ -48,7 +48,7 @@ public class orderService {
     }
 
     public void updateorderDelivered(String orderID){
-        orderDTO order=orderRepository.findById(orderID).orElseThrow(() -> new NotFoundException());
+        orderDTO order=orderRepository.findById(orderID).orElseThrow(() -> new RuntimeException());
         order.setPaid(true);
         order.setDelivered(true);
         order.setDeliveredAt(new Date());

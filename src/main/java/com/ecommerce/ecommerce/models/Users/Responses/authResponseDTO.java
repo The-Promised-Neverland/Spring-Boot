@@ -9,7 +9,6 @@ import lombok.*;
 @NoArgsConstructor
 @ToString
 public class authResponseDTO{
-    private String _id;
     private String name;
     private String email;
     private Boolean isAdmin=false;

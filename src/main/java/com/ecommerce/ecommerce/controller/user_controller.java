@@ -1,7 +1,5 @@
 package com.ecommerce.ecommerce.controller;
 
-import com.ecommerce.ecommerce.exceptions.ExpiredSessionException;
-import com.ecommerce.ecommerce.exceptions.UnauthorizedAccessException;
 import com.ecommerce.ecommerce.models.Users.Requests.updateRequestDTO;
 import com.ecommerce.ecommerce.models.Users.UserDetails;
 import com.ecommerce.ecommerce.models.Users.userDTO;
@@ -17,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/auth")
 public class user_controller {
     @Autowired
     private userService userService;
@@ -45,7 +43,11 @@ public class user_controller {
         return ResponseEntity.ok(user);
     }
 
-
+    @GetMapping("/auth")
+    public ResponseEntity<?> GETuSER(){
+        Authentication authentication=SecurityContextHolder.getContext().getAuthentication();
+        return ResponseEntity.ok(authentication.getPrincipal());
+    }
     /**
      * @PUT
      * @Body(Optional) - name,email,password
@@ -65,12 +67,9 @@ public class user_controller {
             else{
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
-        } catch (ExpiredSessionException e) {
+        } catch (RuntimeException e) {
             // Handle JWT token expiration exception here
             return ResponseEntity.status(HttpStatus.NETWORK_AUTHENTICATION_REQUIRED).build();
-        } catch (UnauthorizedAccessException e) {
-            // Handle other custom exceptions here if needed
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 

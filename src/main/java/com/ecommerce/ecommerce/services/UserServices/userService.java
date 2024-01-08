@@ -1,7 +1,10 @@
 package com.ecommerce.ecommerce.services.UserServices;
 
+import com.ecommerce.ecommerce.exceptions.UserAlreadyExistsException;
+import com.ecommerce.ecommerce.exceptions.UserCreationFailedException;
+import com.ecommerce.ecommerce.exceptions.UserNotFoundException;
+import com.ecommerce.ecommerce.exceptions.UserUpdateRequestFailed;
 import com.ecommerce.ecommerce.models.Users.Requests.updateRequestDTO;
-import com.ecommerce.ecommerce.models.Users.Responses.authResponseDTO;
 import com.ecommerce.ecommerce.models.Users.Requests.registerRequestDTO;
 import com.ecommerce.ecommerce.models.Users.userDTO;
 import com.ecommerce.ecommerce.repository.UserRepository;
@@ -29,28 +32,31 @@ public class userService {
     }
 
 
-    public authResponseDTO createNewUser(registerRequestDTO request){
+    public void  createNewUser(registerRequestDTO request) {
         String name=request.getName();
         String email=request.getEmail();
         String password=request.getPassword();
         userDTO existingUser = userRepository.findByEmail(email);
         if (existingUser != null) {
-            throw new RuntimeException("User with this email already exists.");
+            throw new UserAlreadyExistsException(email);
         }
-
-        userDTO newUser=new userDTO();
-        newUser.setPassword(encoder.encode(password));
-        newUser.setName(name);
-        newUser.setEmail(email);
-        userRepository.save(newUser);
-
-        authResponseDTO responseDTO = new authResponseDTO(newUser.get_id(), newUser.getName(), newUser.getEmail(), newUser.getIsAdmin());
-
-        return responseDTO;
+        try {
+            userDTO newUser = new userDTO();
+            newUser.setPassword(encoder.encode(password));
+            newUser.setName(name);
+            newUser.setEmail(email);
+            userRepository.save(newUser);
+        } catch (Exception e) {
+            throw new UserCreationFailedException(email,e);
+        }
     }
 
-    public void updateUser(String userID, updateRequestDTO request){
-        userDTO updateUser=userRepository.findById(userID).get();
+    public void updateUser(String email, updateRequestDTO request){
+        userDTO updateUser=userRepository.findByEmail(email);
+
+        if(updateUser==null){
+            throw new UserNotFoundException(email);
+        }
 
         if(request.getName()!=null){
             updateUser.setName(request.getName());
@@ -62,8 +68,12 @@ public class userService {
             String encodedPassword = encoder.encode(request.getPassword());
             updateUser.setPassword(encodedPassword);
         }
-        userRepository.save(updateUser);
-        return;
+
+        try {
+            userRepository.save(updateUser);
+        } catch (Exception e) {
+            throw new UserUpdateRequestFailed(email, e);
+        }
     }
 
 

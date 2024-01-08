@@ -37,4 +37,5 @@ public class userDTO {
 
     @LastModifiedDate
     private Date updatedAt;
+
 }
