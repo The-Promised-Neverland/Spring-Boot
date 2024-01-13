@@ -17,8 +17,8 @@ public class UserDetails implements org.springframework.security.core.userdetail
     private final String password;
     private final Boolean isAdmin;
 
-    public UserDetails(String _id, String name, String email, String password, Boolean isAdmin) {
-        this._id = _id;
+    public UserDetails(String id, String name, String email, String password, Boolean isAdmin) {
+        _id = id;
         this.name=name;
         this.email = email;
         this.password = password;

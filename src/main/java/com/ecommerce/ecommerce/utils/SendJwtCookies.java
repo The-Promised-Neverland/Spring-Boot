@@ -2,7 +2,9 @@ package com.ecommerce.ecommerce.utils;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.stereotype.Component;
 
+@Component
 public class SendJwtCookies {
     public void sendCookies(HttpServletResponse response, String jwt){
         Cookie cookie = new Cookie("jwt", jwt); // Create a new cookie

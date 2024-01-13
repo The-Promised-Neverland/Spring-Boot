@@ -1,5 +1,7 @@
 package com.ecommerce.ecommerce.controller;
 
+import com.ecommerce.ecommerce.exceptions.AuthenticationFailedException;
+import com.ecommerce.ecommerce.exceptions.IncorrectCredentialsException;
 import com.ecommerce.ecommerce.models.Users.Requests.loginRequestDTO;
 import com.ecommerce.ecommerce.models.Users.Requests.registerRequestDTO;
 import com.ecommerce.ecommerce.models.Users.Responses.authResponseDTO;
@@ -14,8 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -30,6 +34,7 @@ public class auth_controller {
     @Autowired
     private userService userService;
 
+    @Autowired
     private SendJwtCookies sendJwtCookies;
 
     Logger logger= LoggerFactory.getLogger(auth_controller.class);
@@ -40,25 +45,25 @@ public class auth_controller {
      * @Response - id,name,email,isAdmin,token
      */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody loginRequestDTO request, HttpServletResponse response) {
+    public ResponseEntity<?> login(@RequestBody loginRequestDTO request, HttpServletResponse response) throws AuthenticationFailedException {
         try {
             UsernamePasswordAuthenticationToken authtoken = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
             Authentication authUser = authenticationManager.authenticate(authtoken);
+            UserDetails userDetails = (UserDetails) authUser.getPrincipal();
+            String token = jwtUtils.generateToken(userDetails.getName(),
+                                                  userDetails.getAuthorities().stream().iterator().next().getAuthority(),
+                                                  userDetails.getUsername(),
+                                                  userDetails.get_id());
+            authResponseDTO loggedUser = new authResponseDTO(userDetails.getName(),
+                    userDetails.getEmail(),
+                    userDetails.getIsAdmin());
 
-//            UserDetails userDetails = (UserDetails) authUser.getPrincipal();
-//            String token = jwtUtils.generateToken(userDetails);
-//            authResponseDTO loggedUser = new authResponseDTO(userDetails.getName(),
-//                    userDetails.getEmail(),
-//                    userDetails.getIsAdmin());
-//
-//            sendJwtCookies.sendCookies(response, token);
-//            System.out.println(token);
-//
-//            return new ResponseEntity<>(loggedUser, HttpStatus.ACCEPTED);
-            return new ResponseEntity<>(authtoken,HttpStatus.OK);
-        } catch (Exception e) {
-            logger.info(e.toString());
-            throw new RuntimeException();
+            sendJwtCookies.sendCookies(response, token);
+            return new ResponseEntity<>(loggedUser, HttpStatus.ACCEPTED);
+        } catch (BadCredentialsException e) {
+            throw new IncorrectCredentialsException(e);
+        } catch (AuthenticationException e) {
+            throw new AuthenticationFailedException(e);
         }
     }
 
@@ -69,12 +74,14 @@ public class auth_controller {
      */
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody registerRequestDTO request, HttpServletResponse response) {
-            userService.createNewUser(request);
-            UserDetails userDetails=new UserDetails(null, request.getName(), request.getEmail(),null,false);
-            String token = jwtUtils.generateToken(userDetails);
-            authResponseDTO createdUser = new authResponseDTO(userDetails.getName(),
-                                                              userDetails.getEmail(),
-                                                              userDetails.getIsAdmin());
+            String userId=userService.createNewUser(request);
+            String token = jwtUtils.generateToken(request.getName(),
+                                             "USER",
+                                                  request.getEmail(),
+                                                  userId);
+            authResponseDTO createdUser = new authResponseDTO(request.getName(),
+                                                              request.getEmail(),
+                                                              false);
 
             sendJwtCookies.sendCookies(response, token);
 

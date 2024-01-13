@@ -33,11 +33,13 @@ public class jwtFilter extends OncePerRequestFilter {
             String email= jwtUtils.getEmailFromToken(token);
             String role=jwtUtils.getRoleFromToken(token);
             String name=jwtUtils.getNameFromToken(token);
+            String userId=jwtUtils.getUserIdFromToken(token);
 
             // Create a map to store name and email
             Map<String, String> userDetailsMap = new HashMap<>();
             userDetailsMap.put("name", name);
             userDetailsMap.put("email", email);
+            userDetailsMap.put("userId", userId);
 
             UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken=new UsernamePasswordAuthenticationToken(userDetailsMap,null, Collections.singleton(new SimpleGrantedAuthority(role)));
             SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);

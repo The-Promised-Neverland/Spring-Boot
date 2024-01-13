@@ -59,11 +59,12 @@ public class JwtUtils {
     }
 
     // Generate token for user
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(String name, String role, String email, String userId) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("role", userDetails.getAuthorities().iterator().next().getAuthority());
-        claims.put("name", userDetails.getName());
-        return doGenerateToken(claims, userDetails.getUsername());
+        claims.put("role", role);
+        claims.put("name", name);
+        claims.put("userId", userId);
+        return doGenerateToken(claims,email);
     }
 
     // Generate a JWT token
@@ -75,5 +76,9 @@ public class JwtUtils {
                 .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY))
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    public String getUserIdFromToken(String token) {
+        return getClaimFromToken(token, claims -> claims.get("userId", String.class));
     }
 }

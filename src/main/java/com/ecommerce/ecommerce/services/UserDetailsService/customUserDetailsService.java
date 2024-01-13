@@ -21,10 +21,10 @@ public class customUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("User not found with email: " + email);
         }
         UserDetails loadUser=new UserDetails(user.get_id(),
-                                                         user.getName(),
-                                                         user.getEmail(),
-                                                         user.getPassword(),
-                                                         user.getIsAdmin());
+                                             user.getName(),
+                                             user.getEmail(),
+                                             user.getPassword(),
+                                             user.getIsAdmin());
         return loadUser;
     }
 }

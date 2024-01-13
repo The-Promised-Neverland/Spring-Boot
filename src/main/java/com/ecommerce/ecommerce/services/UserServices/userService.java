@@ -32,7 +32,7 @@ public class userService {
     }
 
 
-    public void  createNewUser(registerRequestDTO request) {
+    public String createNewUser(registerRequestDTO request) {
         String name=request.getName();
         String email=request.getEmail();
         String password=request.getPassword();
@@ -45,7 +45,7 @@ public class userService {
             newUser.setPassword(encoder.encode(password));
             newUser.setName(name);
             newUser.setEmail(email);
-            userRepository.save(newUser);
+            return userRepository.save(newUser).get_id();
         } catch (Exception e) {
             throw new UserCreationFailedException(email,e);
         }

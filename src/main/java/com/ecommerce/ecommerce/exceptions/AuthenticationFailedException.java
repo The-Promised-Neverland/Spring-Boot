@@ -1,7 +1,9 @@
 package com.ecommerce.ecommerce.exceptions;
 
-public class AuthenticationFailedException extends RuntimeException{
+import javax.naming.AuthenticationException;
+
+public class AuthenticationFailedException extends RuntimeException {
     public AuthenticationFailedException(Throwable cause) {
-        super("Authentication failed. Invalid email or password.", cause);
+        super("Authentication failed due to server error. Please try again or after some time.",cause);
     }
 }
