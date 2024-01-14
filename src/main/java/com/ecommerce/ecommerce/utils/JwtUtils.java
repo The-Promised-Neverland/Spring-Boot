@@ -1,6 +1,5 @@
 package com.ecommerce.ecommerce.utils;
 
-import com.ecommerce.ecommerce.models.Users.UserDetails;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

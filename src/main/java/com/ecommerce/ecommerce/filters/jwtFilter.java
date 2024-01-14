@@ -1,5 +1,6 @@
 package com.ecommerce.ecommerce.filters;
 
+import com.ecommerce.ecommerce.models.Users.UserDetails;
 import com.ecommerce.ecommerce.utils.ExtractCookieFromRequests;
 import com.ecommerce.ecommerce.utils.JwtUtils;
 import jakarta.servlet.FilterChain;
@@ -41,7 +42,9 @@ public class jwtFilter extends OncePerRequestFilter {
             userDetailsMap.put("email", email);
             userDetailsMap.put("userId", userId);
 
-            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken=new UsernamePasswordAuthenticationToken(userDetailsMap,null, Collections.singleton(new SimpleGrantedAuthority(role)));
+            UserDetails user=new UserDetails(userId,name,email,null,role=="USER" ? false : true);
+
+            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken=new UsernamePasswordAuthenticationToken(user,null, Collections.singleton(new SimpleGrantedAuthority(role)));
             SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
         }
 
